@@ -112,17 +112,17 @@ exports.periodicCheck = functions.region('europe-west1').https.onRequest(async (
 
     console.log(`LATEST EXPIRED ORDER`, currentExpiredOrderData);
 
-    var accountSid = 'AC454954447528c9590e729081267245e8';
-    var authToken = '09d6e0de624c35fda5772e22f3b315e7';
+    var accountSid = 'TWILIO SID';
+    var authToken = 'TWILIO AUTH TOKEN';
     var twilio = require('twilio');
     var client = new twilio(accountSid, authToken);
 
-    client.studio.v1.flows('FWb0b3a2284d1699d205b458922153611f')
+    client.studio.v1.flows('STUDIO FLOW KEY MOCK')
         .executions
         .create({ to: callerId, from: '+4940299960980' })
         .then((message) => {
             console.log(`CALLED: ${callerId} # SID: ${message.sid}`);
-
+            
             setOrderStatusExpired(currentExpiredOrder.id).then(() => {
                 return response.send(`CALLED: ${callerId} # SID: ${message.sid} # DOC ID: ${currentExpiredOrder.id}`);
             }, e => {
