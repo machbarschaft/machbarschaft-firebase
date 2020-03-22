@@ -5,49 +5,67 @@ admin.initializeApp(functions.config().firebase);
 let db = admin.firestore();
 const Client = require("@googlemaps/google-maps-services-js").Client;
 
-exports.helloWorld = functions.https.onRequest((request, response) => {
+async function getGeoPosByLocation(locationString) {
+    return new Promise((resolve, reject) => {
+        new Client({})
+            .geocode({
+                params: {
+                    address: locationString,
+                    key: 'AIzaSyDA9AqX4iQ442DW67vlwybfd8NFS1R9fiM'
+                },
+                timeout: 5000
+            }).then(r => {
+                console.log(r.data.results[ 0 ]);
+
+                resolve({
+                    latitude: r.data.results[ 0 ].geometry.location.lat,
+                    longitude: r.data.results[ 0 ].geometry.location.lng
+                });
+            })
+            .catch(e => {
+                reject(e);
+            });
+    });
+}
+
+function saveToFirebase(newDoc) {
+    return db.collection('Order').add(newDoc);
+}
+
+exports.dataExtender = functions.region('europe-west1').https.onRequest(async (request, response) => {
 
     console.log('body', request.body);
-    db.collection('Order').add(request.body);
 
-    const client = new Client({});
+    // TO DO: better authentication ;)
+    if (!request.query.auth || request.query.auth !== 'YC8o1_wffEerdxjAynodxj_wfyno8k') {
+        response.status(401).send("Missing authentication");
+    }
 
-    var currentUserAddress = request.body.fields.street.stringValue+", "+request.body.fields.zip.stringValue+", Deutschland";
-    client
-      .geocode({
-        params: {
-          address: currentUserAddress,
-          key: 'AIzaSyDA9AqX4iQ442DW67vlwybfd8NFS1R9fiM'
-        },
-        timeout: 10000 // milliseconds
-      })
-      .then(r => {
-        console.log(r.data.results[0]);
-        console.log(r.data.results[0].geometry);
-        console.log(r.data.results[0].geometry.location);
-        console.log(r.data.results[0].geometry.location.lat+", "+r.data.results[0].geometry.location.lng);//.results[0].geometry.location.latitude+" "+r.data.results[0].geometry.location.longitude);
-      })
-      .catch(e => {
-        console.log(e);
-      });
-    
-    /*var publicConfig = {
-      key: 'AIzaSyDA9AqX4iQ442DW67vlwybfd8NFS1R9fiM',
-      stagger_time:       1000, // for elevationPath
-      encode_polylines:   false,
-      secure:             true, // use https
-    };
-    var gmAPI = new GoogleMapsAPI(publicConfig);
+    let newDoc = request.body;
 
+    // handle missing street and/or zip
+    if (!newDoc || !newDoc.street || !newDoc.zip || !newDoc.city) {
+        response.status(400).send("MISSING STREET, HOUSE_NUMBER, ZIP AND/OR CITY");
+    }
 
-    gmAPI.geocode( { 'address': currentUserAddress}, function(results, status) {
-        if (status == google.maps.GeocoderStatus.OK) {
-          var latitude = results[0].geometry.location.latitude;
-          var longitude = results[0].geometry.location.longitude;
-          var latlng = new LatLng(latitude, longitude);
-          var userAddress = new LatLng(currentUserAddress)
-          console.log(userAddress);
-      } 
-    }); */
-    response.send("OK");
+    let geoPos = null;
+    geoPos = await getGeoPosByLocation(`${newDoc.street} ${newDoc.house_number}, ${newDoc.zip}, Deutschland"`).catch((e) => { console.error(e.message) });
+
+    if (!geoPos) {
+        geoPos = await getGeoPosByLocation(`${newDoc.city}, Deutschland"`).catch((e) => { console.error(e.message) });
+    }
+
+    newDoc.timestamp = new Date().toISOString();
+    newDoc.location_validated = geoPos ? true : false;
+    newDoc.lat = geoPos ? geoPos.latitude : null;
+    newDoc.lng = geoPos ? geoPos.longitude : null;
+
+    console.log("FINAL DOCUMENT", newDoc)
+
+    saveToFirebase(newDoc).then(() => {
+        response.send(newDoc);
+    }, e => {
+        console.error(e);
+        response.status(500).send("ERROR SAVING DOCUMENT");
+    });
 });
