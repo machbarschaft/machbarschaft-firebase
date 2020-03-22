@@ -48,9 +48,10 @@ exports.dataExtender = functions.region('europe-west1').https.onRequest(async (r
         response.status(400).send("MISSING STREET, HOUSE_NUMBER, ZIP AND/OR CITY");
     }
 
-    let geoPos = null;
-    geoPos = await getGeoPosByLocation(`${newDoc.street} ${newDoc.house_number}, ${newDoc.zip}, Deutschland"`).catch((e) => { console.error(e.message) });
+    // fetch geoPos with street and zip
+    let geoPos = await getGeoPosByLocation(`${newDoc.street} ${newDoc.house_number}, ${newDoc.zip}, Deutschland"`).catch((e) => { console.error(e.message) });
 
+    // try again with city only
     if (!geoPos) {
         geoPos = await getGeoPosByLocation(`${newDoc.city}, Deutschland"`).catch((e) => { console.error(e.message) });
     }
