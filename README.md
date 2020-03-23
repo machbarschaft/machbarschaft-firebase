@@ -21,6 +21,6 @@ The periodicCheck function is scheduled on a regular basis and searches for orde
 
 Unfortunately, there seems to be no way to get latitude and longitude coordinates directly from Twilio. Moreover, sending the call data directly to a Firestore database did not really work in the first place. Additionally, we needed to call our periodicCheck function, well.., periodically which seems to be impossible to do with Twilio directly. For that reasons we decided to move that wirk to two Firebase functions.
 
-## How do I setup it myself?
+## How do I set it up myself?
 
 You mustly just need to upload the two Firebase functions described above to your Firebase account. There you get a link to call the function with (using a POST-request usually). For dataExtender, that link has to be added to your Twilio flow. periodicCheck calls the Twilio API by itself, so no work to do here.
