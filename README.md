@@ -7,9 +7,11 @@
 
 Project Machbarschaft was created in the context of [WirVsVirus Hackathon](https://wirvsvirushackathon.org/) hosted by the German Government. Our pitch video can be found [on youtube](https://www.youtube.com/watch?v=8YJ0I0dMmWg). We also have a [Devpost Profile](https://devpost.com/software/einanrufhilft) and a website [machbarschaft.jetzt](https://machbarschaft.jetzt/). Our main repository is [here](https://github.com/marc-sommer/machbarschaft).
 
-This repository contains the API to connect our Twilio-Bot with a Firebase/Firestore database utilizing Firebase Functions.
+This repository contains the API to connect our Twilio-Bot with a Firebase/Firestore database utilizing [Firebase Functions](https://firebase.google.com/docs/functions).
 
 ## What is it?
+
+
 
 The main code can be found in functions/index.js. It is split up into two Firebase functions, "dataExtender" and "periodicCheck". 
 
@@ -23,4 +25,6 @@ Unfortunately, there seems to be no way to get latitude and longitude coordinate
 
 ## How do I set it up myself?
 
-You mustly just need to upload the two Firebase functions described above to your Firebase account. There you get a link to call the function with (using a POST-request usually). For dataExtender, that link has to be added to your Twilio flow. periodicCheck calls the Twilio API by itself, so no work to do here.
+To reproduce our setup, you need a Twilio account configured as described in [our Twilio repository](https://github.com/machbarschaft/machbarschaft-twilio) and a Google Firebase account. We use [Firebase Cloud Functions](https://firebase.google.com/docs/functions) to run the two functions dataExtender and periodicCheck.
+
+You mostly just need to upload the two Firebase functions described above to your Firebase account. There you get a link to call the function with (using a POST-request usually). For dataExtender, that link has to be added to your Twilio flow. periodicCheck calls the Twilio API by itself, so no work to do here.
