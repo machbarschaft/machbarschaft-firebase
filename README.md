@@ -1,5 +1,9 @@
 # Machbarschaft
-## Firebase/Firestore API
+
+## Firebase: Firestore
+
+
+## Firebase: Firestore API
 
 ![Machbarschaft Logo](logo.jpeg)
 
