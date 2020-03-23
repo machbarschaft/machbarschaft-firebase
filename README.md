@@ -10,7 +10,9 @@ This repository contains the details of used services of the Firebase ecosystem 
 
 ## Firebase: Firestore
 
-Our database in Firestore is the central element in our architecture to save processed data from Twilio to make it accessible for the Android and iOS Apps.
+Our database in Firestore (noSQL) is the central element in our architecture to save processed data from Twilio to make it accessible for the Android and iOS Apps.
+
+Please get in contact with us to learn more about our database structure.
 
 ## Firebase: Firestore API (Cloud function for Twilio-to-Firebase connection)
 
