@@ -16,41 +16,42 @@ Please get in contact with us to learn more about our database structure.
 ### Data structure 
 The data stored in our database in divided into three entities. Those three entities with their attributes and an example dataset are explained in the following table.
 
-Account *(account of a person who wants to help)*
+Account *(account of a volunteer who wants to help)*
 | attribute  | data type | description | example |
 | ------------- | ------------- | ----------- | ------ |
 | first_name | string | first name of a helper | Max |
 | last_name | string | last name of a helper | Mustermann |
 | id | string | phone number of a helper used as an id | +49 160 1234567 |
-| radius | number | radius in which the helper looks for orders | 10 |
+| radius | number | radius in which the helper looks for orders, unit: kilometers | 10 |
+| credits | number | scoring system to reward active volunteers in the future | 30 |
 
 Order *(order made by a person who needs help)*
 | attribute  | data type | description | example |
 | ------------- | ------------- | ----------- | ------ |
-| carNecessary | boolean | car is necessary for transportation | true |
-| city | string | city | Musterstadt |
-| house_number | number | housenumber | 1 |
-| lat | number | latitude calculated by adress | 50,0017921 |
-| lng | number | longitude calculated by adress | 8,2361562 |
-| location_validated | boolean | value if location was validated | false |
 | name | string | name of person who needs help | Max Mustermann |
+| city | string | city the person who needs help lives in | Musterstadt |
+| street | string | street the person who needs help lives in | Musterstraße |
+| house_number | number | housenumber of the house the person who needs help lives in | 1 |
+| zip | string | zip code of the place where the person who needs help lives | 12345 |
+| lat | number | latitude coordinate calculated by adress using Google Maps API | 50,0017921 |
+| lng | number | longitude coordinate calculated by adress | 8,2361562 |
+| location_validated | boolean | value if location was validated, i.e. coordinates have been found for the adress using Google Maps API | false |
 | phone_number | string | phone_number of person who needs help | +491631234567 |
+| type_of_help | string | enum of three values (APOTHEKE, ) | APOTHEKE |
 | prescription | boolean | is a prescription needed | false |
-| status | string | status of order | open |
-| street | string | street | Musterstraße |
+| carNecessary | boolean | car is necessary for transportation of ordered products | true |
+| status | string | status of order (open, confirmed or closed) | open |
+| urgency | string | one of three values (low, medium or high) | low |
 | timestamp | string | timestamp when order was crated | 2020-03-21T14:01:56.212Z |
-| type_of_help | string | enum of three values | APOTHEKE |
-| urgency | string | enum of three values | low |
-| zip | string | zip | 12345 |
-| id | string | uuid | e99d60f0-6e04-11ea-bc55-0242ac130003  |
+| id | string | uuid of the order, technically needed | e99d60f0-6e04-11ea-bc55-0242ac130003  |
 
-Order_account *(mapping table with order and account)*
+Order_account *(assinging/mapping an order to a volunteer account)*
 | attribute  | data type | description | example |
 | ------------- | ------------- | ----------- | ------ |
-| account_id | string | id of account | +49 160 1234567 |
-| created_timestamp | string | first name of a helper | 2020-03-21T14:01:56.212Z" |
-| order_id | string | id of order | e99d60f0-6e04-11ea-bc55-0242ac130003 |
-| status | string | status | confirmed |
+| account_id | string | id of account, usually a phone number | +49 160 1234567 |
+| created_timestamp | string | time the volunteer accepted this order | 2020-03-21T14:01:56.212Z" |
+| order_id | string | uuid of order | e99d60f0-6e04-11ea-bc55-0242ac130003 |
+| status | string | status of order (open, confirmed or closed) | confirmed |
 
 ## Firebase: Firestore API (Cloud function for Twilio-to-Firebase connection)
 
