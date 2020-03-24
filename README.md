@@ -51,7 +51,6 @@ Order_account *(assinging/mapping an order to a volunteer account)*
 | account_id | string | id of account, usually a phone number | +49 160 1234567 |
 | created_timestamp | string | time the volunteer accepted this order | 2020-03-21T14:01:56.212Z" |
 | order_id | string | uuid of order | e99d60f0-6e04-11ea-bc55-0242ac130003 |
-| status | string | status of order (open, confirmed or closed) | confirmed |
 
 ## Firebase: Firestore API (Cloud function for Twilio-to-Firebase connection)
 
