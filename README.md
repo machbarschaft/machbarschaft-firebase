@@ -43,7 +43,7 @@ Order *(order made by a person who needs help)*
 | status | string | status of order (open, confirmed or closed) | open |
 | urgency | string | one of three values (low, medium or high) | low |
 | timestamp | string | timestamp when order was crated | 2020-03-21T14:01:56.212Z |
-| id | string | uuid of the order, technically needed | e99d60f0-6e04-11ea-bc55-0242ac130003  |
+| id | string | uuid of order, technically needed | e99d60f0-6e04-11ea-bc55-0242ac130003  |
 
 Order_account *(assinging/mapping an order to a volunteer account)*
 | attribute  | data type | description | example |
