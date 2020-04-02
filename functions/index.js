@@ -31,20 +31,19 @@ async function getGeoPosByLocation(locationString) {
     });
 }
 
-function saveToFirebase(newDoc) {
-    return db.collection('Order').add(newDoc);
+function saveToFirebase(collection, doc) {
+    return db.collection(collection).add(doc);
 }
 
 function setOrderStatusExpired(id) {
     return db.collection('Order').doc(id).update({ status: 'expired' });
 }
 
-exports.dataExtender = functions.region('europe-west1').https.onRequest(async (request, response) => {
+exports.dataExtender = functions.region('europe-west3').https.onRequest(async (request, response) => {
 
     console.log('body', request.body);
 
-    // TO DO: Pssst. Do better authentication ;)
-    if (!request.query.auth || request.query.auth !== 'YC8o1_wffEerdxjAynodxj_wfyno8k') {
+    if (!request.query.auth || request.query.auth !== process.env.AUTH_KEY) {
         return response.status(401).send("Missing authentication");
     }
 
@@ -70,7 +69,29 @@ exports.dataExtender = functions.region('europe-west1').https.onRequest(async (r
 
     console.log("FINAL DOCUMENT", newDoc)
 
-    saveToFirebase(newDoc).then(() => {
+    saveToFirebase('Order', newDoc).then(() => {
+        return response.send(newDoc);
+    }, e => {
+        console.error(e);
+        return response.status(500).send("ERROR SAVING DOCUMENT");
+    });
+});
+
+exports.gatherFeedback = functions.region('europe-west3').https.onRequest(async (request, response) => {
+
+    console.log('body', request.body);
+
+    if (!request.query.auth || request.query.auth !== process.env.AUTH_KEY) {
+        return response.status(401).send("Missing authentication");
+    }
+
+    let newDoc = request.body;
+
+    newDoc.timestamp = admin.firestore.Timestamp.now();
+
+    console.log("FINAL FEEDBACK", newDoc)
+
+    saveToFirebase('Feedback', newDoc).then(() => {
         return response.send(newDoc);
     }, e => {
         console.error(e);
@@ -93,9 +114,12 @@ function getLatestExpiredOrders() {
 
 // NOT ACTIVATED YET
 // .pubsub.schedule('every 5 minutes')
-exports.periodicCheck = functions.region('europe-west1').https.onRequest(async (request, response) => {
+exports.periodicCheck = functions.region('europe-west3').https.onRequest(async (request, response) => {
     const latestExpiredOrders = await getLatestExpiredOrders();
 
+    if (!request.query.auth || request.query.auth !== process.env.AUTH_KEY) {
+        return response.status(401).send("Missing authentication");
+    }
 
     if (!latestExpiredOrders) {
         return response.status(500).send("ERROR GET LATEST EXPIRED ORDER PHONE NUMBER");
@@ -112,17 +136,18 @@ exports.periodicCheck = functions.region('europe-west1').https.onRequest(async (
 
     console.log(`LATEST EXPIRED ORDER`, currentExpiredOrderData);
 
-    var accountSid = 'TWILIO SID';
-    var authToken = 'TWILIO AUTH TOKEN';
+    var accountSid = 'AC454954447528c9590e729081267245e8';
+    var authToken = '01bc9020094b176077685e80a837ebe8';
     var twilio = require('twilio');
     var client = new twilio(accountSid, authToken);
 
-    client.studio.v1.flows('STUDIO FLOW KEY MOCK')
+    client.studio.v1.flows('FWb0b3a2284d1699d205b458922153611f')
         .executions
-        .create({ to: callerId, from: '+4940299960980' })
+        .create({ to: '+4915233145276', from: '+4940299960980' })
         .then((message) => {
             console.log(`CALLED: ${callerId} # SID: ${message.sid}`);
-            
+            return response.send(`CALLED: ${callerId} # SID: ${message.sid} # DOC ID: ${currentExpiredOrder.id}`);
+
             setOrderStatusExpired(currentExpiredOrder.id).then(() => {
                 return response.send(`CALLED: ${callerId} # SID: ${message.sid} # DOC ID: ${currentExpiredOrder.id}`);
             }, e => {
