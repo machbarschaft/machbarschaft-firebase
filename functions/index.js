@@ -14,7 +14,7 @@ async function getGeoPosByLocation(locationString) {
             .geocode({
                 params: {
                     address: locationString,
-                    key: 'AIzaSyDA9AqX4iQ442DW67vlwybfd8NFS1R9fiM'
+                    key: process.env.MAPS_API_KEY
                 },
                 timeout: 5000
             }).then(r => {
