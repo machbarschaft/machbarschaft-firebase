@@ -6,19 +6,20 @@ admin.initializeApp(functions.config().firebase);
 let db = admin.firestore();
 db.settings({ timestampsInSnapshots: true });
 
-const Client = require("@googlemaps/google-maps-services-js").Client;
-
 async function getGeoPosByLocation(locationString) {
+    const Client = require("@googlemaps/google-maps-services-js").Client;
+
     return new Promise((resolve, reject) => {
         new Client({})
             .geocode({
                 params: {
                     address: locationString,
+                    language: 'de_DE',
                     key: process.env.MAPS_API_KEY
                 },
                 timeout: 5000
             }).then(r => {
-                console.log(r.data.results[ 0 ]);
+                console.log(r.data);
 
                 resolve({
                     latitude: r.data.results[ 0 ].geometry.location.lat,
@@ -136,8 +137,8 @@ exports.periodicCheck = functions.region('europe-west3').https.onRequest(async (
 
     console.log(`LATEST EXPIRED ORDER`, currentExpiredOrderData);
 
-    var accountSid = 'AC454954447528c9590e729081267245e8';
-    var authToken = '01bc9020094b176077685e80a837ebe8';
+    var accountSid = process.env.TWILIO.SID;
+    var authToken = process.env.TWILIO.AUTH_TOKEN;
     var twilio = require('twilio');
     var client = new twilio(accountSid, authToken);
 
