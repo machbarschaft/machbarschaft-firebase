@@ -3,19 +3,22 @@ service cloud.firestore {
 	match /databases/{database}/documents {
 		match /Account/{userId} {
 			// Allow to create a new account if user is authenticated
-			allow create: if request.auth.uid != null;
+			allow create: if request.auth != null
+						  && request.auth.uid != null;
 
 			// Allow reads and deletions only to own user account
-			allow read, delete: if request.auth.uid == userId;
+			allow read, delete: if request.auth != null
+								&& request.auth.uid == userId;
 
 			// Allow updates only to own user account and if the phone number doesn't change
-			allow update: if request.auth.uid == userId
+			allow update: if request.auth != null
+						  && request.auth.uid == userId
 						  && request.resource.data.phone_number == resource.data.phone_number;
 		}
 
 		match /Order/{orderId} {
 			// Allow reading if authenticated
-			allow read: if request.auth.uid != null;
+			allow read, write: if request.auth != null && request.auth.uid != null;
 		}
 
 		match /Order_Account/{oaId} {
@@ -23,11 +26,13 @@ service cloud.firestore {
 			// ... only for the own user
 			// ... for existing orders that are not yet taken
 			// TODO does entry for order exist in this db?
-			allow create: if request.resource.data.account_id == request.auth.uid
+			allow create: if request.auth != null
+						  && request.resource.data.account_id == request.auth.uid
 						  && exists(/databases/$(database)/documents/Order/$(request.resource.data.order_id));
 
 			// Allow to read and delete only own entries
-			allow read, delete: if resource.data.account_id == request.auth.uid;
+			allow read, update, delete: if request.auth != null
+										&& resource.data.account_id == request.auth.uid;
 		}
 	}
 }
