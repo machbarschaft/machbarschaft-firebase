@@ -1,6 +1,58 @@
 rules_version = '2';
 service cloud.firestore {
 	match /databases/{database}/documents {
+		match /account/{accountId} {
+			// Allow full access to own account data
+			allow get, write: if request.auth != null
+							  && request.auth.uid == accountId;
+
+			// Do not allow bulk requests
+			allow list: if false;
+		}
+
+		match /locale/{locale} {
+			// Allow read access for every one
+			allow read: if true;
+
+			// Noone (except admins) can write
+			allow write: if false;
+
+			match /order/{orderId} {
+				// Allow to reading or updating if authenticated and either the order is open,
+				// or has been assigned to the requesting user
+				allow read, update: if request.auth != null
+									&& request.auth.uid != null
+									&& (resource.data.status == 'open'
+										|| resource.data.account_id == request.auth.uid);
+
+				// Only admins can create and delete orders
+				allow create, delete: if false;
+
+				match /log/{logId} {
+					// Allow reading and creating log entries onyl if the order is assigned
+					// to the requesting account
+					allow read, create: if request.auth != null
+										&& request.auth.uid != null
+										&& get(/databases/$(database)/documents/locale/$(locale)/order/$(order)).data.account_id == request.auth.uid;
+
+					// Only admins can update and delete log entries
+					allow update, delete: if false;
+				}
+			}
+
+			match /feedback/{feedbackId} {
+				// Allow all authenticated user to create feedback
+				allow create: if request.auth != null
+							  && request.auth.uid != null;
+
+				// Only admins can read update and delete
+				allow read, update, delete: if false;
+			}
+		}
+
+		//
+		// Old Collections
+		//
 		match /Account/{userId} {
 			// Allow to create a new account if user is authenticated
 			allow create: if request.auth != null
