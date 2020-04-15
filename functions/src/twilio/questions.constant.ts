@@ -19,6 +19,18 @@ export enum Playable {
 
     GOT_ADDRESS = "https://firebasestorage.googleapis.com/v0/b/einanrufhilft-95d29.appspot.com/o/twilio%2Ffolgendeadresseerkannt_Projekt.mp3?alt=media&token=075faac2-ef6d-4c51-86a9-2e73cf76ee53",
     ASK_FOR_ADDRESS_CHECK_UP = "https://firebasestorage.googleapis.com/v0/b/einanrufhilft-95d29.appspot.com/o/twilio%2Fadresserichtig_Projekt.mp3?alt=media&token=5c2c5202-7d05-4305-bf3d-f22a89bf5cf8",
+    GOT_INVALID_ADDRESS = "Leider konnten wir die genannte Adresse nicht finden.",
+
+    GOT_INCOMPLETE_ORDER = "Hallo, hier ist Lisa von Machbarschaft. Zu dieser Telefonnummer gibt es noch eine unvollständige Anfrage von",
+    ASK_TO_RESUME_ORDER = "Wollen Sie Ihre Anfrage vervollständigen?",
+    ORDER_RESUMED = "Okay, Sie können nun die übrigen Fragen beantworten.",
+    GOT_OPEN_ORDER = "Hallo, hier ist Lisa von Machbarschaft. Zu dieser Telefonnummer gibt es noch eine offene Anfrage von",
+    ASK_TO_KEEP_ORDER = "Wollen Sie die Anfrage löschen?",
+
+    SUPPRESSED_PHONE_NUMBER = "Hallo, hier ist Lisa von Machbarschaft. Um ein Hilfegesuch zu erstelllen, benötigen wir Ihre Telefonnummer. Diese wird aktuell jedoch unterdrückt und ist uns nicht bekannt. Bitte ändern Sie die Einstellungen Ihres Telefons und versuchen Sie es erneut. Vielen Dank.",
+
+    ORDER_DELETED = "https://firebasestorage.googleapis.com/v0/b/einanrufhilft-95d29.appspot.com/o/twilio%2Fok_Projekt.mp3?alt=media&token=b546677c-59dd-4826-8ebf-88333f52bb13",
+    ORDER_KEEPED = "https://firebasestorage.googleapis.com/v0/b/einanrufhilft-95d29.appspot.com/o/twilio%2Fallesklar_Projekt%20(online-audio-converter.com).mp3?alt=media&token=f251d6a9-e2f9-4365-b1fb-966095ea19e1",
 
     MISUNDERSTOOD = "https://firebasestorage.googleapis.com/v0/b/einanrufhilft-95d29.appspot.com/o/twilio%2Fnichtverstanden_Projekt.mp3?alt=media&token=24b2c191-55c6-4933-a861-92f84bf7f930",
     THANK_YOU_BYE = "https://firebasestorage.googleapis.com/v0/b/einanrufhilft-95d29.appspot.com/o/twilio%2Fanfrageangenommen_Projekt.mp3?alt=media&token=5ad72d1a-7188-4bb4-b6f7-e29f51bc154d",
@@ -37,7 +49,9 @@ export enum OrderFlow {
     ASK_FOR_ADDRESS_ZIP = "ask_for_address_zip",
     ASK_FOR_ADDRESS_CITY = "ask_for_address_city",
     ASK_FOR_ADDRESS_CHECK_UP = "ask_for_address_check_up",
-
+    ASK_FOR_ADDRESS_RECHECK = "ask_for_address_recheck",
+    ASK_FOR_OPEN_ORDER = "ask_for_open_order",
+    ASK_FOR_INCOMPLETE_ORDER = "ask_for_incomplete_order",
 }
 
 export const QUESTIONS: Question[] = [
@@ -111,6 +125,27 @@ export const QUESTIONS: Question[] = [
         introSources: [ Playable.GOT_ADDRESS ],
         addInputToIntro: UserInput.ADDRESS,
         announcementSource: Playable.ASK_FOR_ADDRESS_CHECK_UP,
+        answerType: AnswerType.YES_OR_NO
+    },
+    {
+        index: OrderFlow.ASK_FOR_ADDRESS_RECHECK,
+        introSources: [ Playable.GOT_INVALID_ADDRESS ],
+        addInputToIntro: UserInput.ADDRESS,
+        announcementSource: Playable.ASK_FOR_ADDRESS_CHECK_UP,
+        answerType: AnswerType.YES_OR_NO
+    },
+    {
+        index: OrderFlow.ASK_FOR_OPEN_ORDER,
+        introSources: [ Playable.GOT_OPEN_ORDER ],
+        addInputToIntro: UserInput.CREATE_DATE,
+        announcementSource: Playable.ASK_TO_KEEP_ORDER,
+        answerType: AnswerType.YES_OR_NO
+    },
+    {
+        index: OrderFlow.ASK_FOR_INCOMPLETE_ORDER,
+        introSources: [ Playable.GOT_INCOMPLETE_ORDER ],
+        addInputToIntro: UserInput.CREATE_DATE,
+        announcementSource: Playable.ASK_TO_RESUME_ORDER,
         answerType: AnswerType.YES_OR_NO
     },
 ];

@@ -1,10 +1,17 @@
 import { firestore } from 'firebase-admin';
 
 
+export class OrderMeta {
+    constructor(
+        public id: string,
+        public data: Order
+    ) { }
+}
 export class Order {
     constructor(
         public phone_number: string,
-        public status: Status = Status.INCOMPLETE,
+        public last_call_sid: string,
+        public status: OrderStatus = OrderStatus.INCOMPLETE,
         public type: Type | null = null,
         public extras: Extras | null = null,
         public urgency: Urgency | null = null,
@@ -19,13 +26,23 @@ export class Order {
     parseToFirebaseDoc(): any {
         return {
             phone_number: this.phone_number,
+            last_call_sid: this.last_call_sid,
             status: this.status,
             type: this.type,
             extras: this.extras,
             urgency: this.urgency,
             name: this.name,
-            address: this.address,
-            location: this.location,
+            address: new Address(
+                this.address?.house_number,
+                this.address?.street,
+                this.address?.zip,
+                this.address?.city,
+                this.address?.confirmed
+            ).parseToFirebaseDoc(),
+            location: new Location(
+                this.location?.gps,
+                this.location?.geohash
+            ).parseToFirebaseDoc(),
             account_id: this.account_id,
             privacy_agreed: this.privacy_agreed,
             created: this.created
@@ -45,7 +62,7 @@ export enum Urgency {
     TOMORROW = "tomorrow"
 }
 
-export enum Status {
+export enum OrderStatus {
     OPEN = "open",
     IN_PROGRESS = "in_progress",
     CLOSED = "closed",
@@ -55,29 +72,36 @@ export enum Status {
 
 export class Address {
     constructor(
-        public house_number: String,
-        public street: String,
-        public zip: String,
-        public city: String
+        public house_number: String | null = null,
+        public street: String | null = null,
+        public zip: String | null = null,
+        public city: String | null = null,
+        public confirmed: boolean = false
     ) { }
+
+    parseToFirebaseDoc(): any {
+        return {
+            house_number: this.house_number,
+            street: this.street,
+            zip: this.zip,
+            city: this.city,
+            confirmed: this.confirmed
+        };
+    }
 }
 
 export class Location {
-    public gps: firestore.GeoPoint;
-    public geohash: string;
-
     constructor(
-        public latitude: number,
-        public longitude: number,
-        geohash: string
+        public gps: firestore.GeoPoint | null = null,
+        public geohash: string | null = null
     ) {
-        this.gps = new firestore.GeoPoint(latitude, longitude);
+        this.gps = gps;
         this.geohash = geohash;
     }
 
     parseToFirebaseDoc(): any {
         return {
-            gps: new firestore.GeoPoint(this.latitude, this.longitude),
+            gps: this.gps,
             geohash: this.geohash
         };
     }

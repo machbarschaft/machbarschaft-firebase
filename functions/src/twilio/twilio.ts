@@ -9,3 +9,6 @@ appInbound.post('/voice', interview);
 appInbound.post('/voice/:responseId/gather/:questionIndex', interview);
 
 export const inboundCallForRequest = functions.region('europe-west3').https.onRequest(appInbound);
+
+// export const outboundCallForClosedOrdersCheck = functions.region('europe-west3').https.onRequest(appInbound);
+// export const outboundCallForExpiredOrders = functions.region('europe-west3').https.onRequest(appInbound);

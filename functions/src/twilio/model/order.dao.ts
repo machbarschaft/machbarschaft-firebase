@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
-import { Order, Status } from './order.model';
+import { Order, OrderStatus, OrderMeta } from './order.model';
 
 export class OrderDao {
     db: FirebaseFirestore.Firestore;
@@ -22,11 +22,11 @@ export class OrderDao {
         return OrderDao.instance;
     }
 
-    public findOrCreateOrder = (phone_number: string): Promise<{ id: string, data: Order }> => {
-        return new Promise<{ id: string, data: Order }>(async (resolve, reject) => {
+    public findOrCreateActiveOrdersByPhoneNumber = (phone_number: string, call_sid: string): Promise<OrderMeta[]> => {
+        return new Promise<OrderMeta[]>(async (resolve, reject) => {
             const orderSnap: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME)
                 .where("phone_number", "==", phone_number)
-                .where("status", "==", Status.INCOMPLETE)
+                .where("status", "in", [ OrderStatus.OPEN, OrderStatus.INCOMPLETE, OrderStatus.IN_PROGRESS ])
                 .orderBy("created")
                 .get();
 
@@ -35,21 +35,31 @@ export class OrderDao {
             console.log(orderSnap.size > 0 ? orderSnap.docs[ 0 ].data() : null);
 
             if (orderSnap.size > 0) {
-                // There can be several open others at a time (e.g. hung up), so we take the latest one
-                resolve({ id: orderSnap.docs[ 0 ].id, data: orderSnap.docs[ 0 ].data() as Order });
+                resolve(orderSnap.docs.map(snap => new OrderMeta(snap.id, snap.data() as Order)));
             } else {
                 try {
-                    console.log(`Save New Order to Firestore`, new Order(phone_number).parseToFirebaseDoc())
+                    console.log(`Save New Order to Firestore`, new Order(phone_number, call_sid).parseToFirebaseDoc())
                     const addedOrderRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME)
-                        .add(new Order(phone_number).parseToFirebaseDoc());
+                        .add(new Order(phone_number, call_sid).parseToFirebaseDoc());
 
                     const addedOrder: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = await addedOrderRef.get();
-                    resolve({ id: addedOrder.id, data: addedOrder.data() as Order });
+                    resolve([ new OrderMeta(addedOrder.id, addedOrder.data() as Order) ]);
                 } catch (e) {
                     console.error(`[findOrCreateOrder] Error saving Order to Firestore`, e);
                 } finally {
                     reject();
                 }
+            }
+        });
+    }
+
+    public findOrderById = (id: string): Promise<Order> => {
+        return new Promise<Order>(async (resolve, reject) => {
+            const result: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME).doc(id).get();
+            if (result.exists) {
+                resolve(result.data() as Order);
+            } else {
+                reject();
             }
         });
     }

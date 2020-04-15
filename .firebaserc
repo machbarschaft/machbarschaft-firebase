@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "einanrufhilft-95d29"
+    "prod": "einanrufhilft-95d29",
+    "dev": "machbarschaft-dev"
   }
 }
