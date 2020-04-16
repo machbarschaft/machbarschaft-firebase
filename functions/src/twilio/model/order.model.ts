@@ -29,7 +29,10 @@ export class Order {
             last_call_sid: this.last_call_sid,
             status: this.status,
             type: this.type,
-            extras: this.extras,
+            extras: new Extras(
+                this.extras?.car_necessary,
+                this.extras?.prescription
+            ).parseToFirebaseDoc(),
             urgency: this.urgency,
             name: this.name,
             address: new Address(
@@ -109,7 +112,14 @@ export class Location {
 
 export class Extras {
     constructor(
-        public car_necessary: boolean,
-        public prescription: boolean
+        public car_necessary: boolean | null = null,
+        public prescription: boolean | null = null
     ) { }
+
+    parseToFirebaseDoc(): any {
+        return {
+            car_necessary: this.car_necessary,
+            prescription: this.prescription
+        };
+    }
 }

@@ -1,6 +1,7 @@
 import admin from 'firebase-admin';
 import * as functions from 'firebase-functions';
 import { Order, OrderStatus, OrderMeta } from './order.model';
+import { logger, LogLevel } from '../helper/logger.helper';
 
 export class OrderDao {
     db: FirebaseFirestore.Firestore;
@@ -30,22 +31,20 @@ export class OrderDao {
                 .orderBy("created")
                 .get();
 
-            console.log(`[findOrCreateOrder] Found matching Order for ${phone_number}`);
-            console.log(orderSnap.size);
-            console.log(orderSnap.size > 0 ? orderSnap.docs[ 0 ].data() : null);
+            logger(phone_number, '', `Found matching Order for ${phone_number} # Size ${orderSnap.size}`);
 
             if (orderSnap.size > 0) {
                 resolve(orderSnap.docs.map(snap => new OrderMeta(snap.id, snap.data() as Order)));
             } else {
                 try {
-                    console.log(`Save New Order to Firestore`, new Order(phone_number, call_sid).parseToFirebaseDoc())
                     const addedOrderRef: FirebaseFirestore.DocumentReference<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME)
                         .add(new Order(phone_number, call_sid).parseToFirebaseDoc());
 
                     const addedOrder: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = await addedOrderRef.get();
+                    logger(phone_number, addedOrder.id, `Saved New Order To DB`);
                     resolve([ new OrderMeta(addedOrder.id, addedOrder.data() as Order) ]);
                 } catch (e) {
-                    console.error(`[findOrCreateOrder] Error saving Order to Firestore`, e);
+                    logger(phone_number, '', `Error saving Order to Firestore`, e, LogLevel.ERROR);
                 } finally {
                     reject();
                 }
