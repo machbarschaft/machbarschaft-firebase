@@ -52,6 +52,38 @@ export class OrderDao {
         });
     }
 
+    public findOpenOrdersLastDay = (): Promise<OrderMeta[]> => {
+        return new Promise<OrderMeta[]>(async (resolve, reject) => {
+            const yesterday = new Date(new Date().getTime() - (24 * 60 * 60 * 1000));
+
+            const orderSnap: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME)
+                .where("created", "<", yesterday)
+                .where("status", "in", [ OrderStatus.OPEN ])
+                .orderBy("created")
+                .get();
+
+            logger('', '', `Found matching Open Orders last 24 hours # Size ${orderSnap.size}`);
+
+            resolve(orderSnap.docs.map(snap => new OrderMeta(snap.id, snap.data() as Order)));
+        });
+    }
+
+    public findClosedOrdersLastHour = (): Promise<OrderMeta[]> => {
+        return new Promise<OrderMeta[]>(async (resolve, reject) => {
+            const oneHourAgo = new Date(new Date().getTime() - (1 * 60 * 60 * 1000));
+
+            const orderSnap: FirebaseFirestore.QuerySnapshot<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME)
+                .where("created", "<", oneHourAgo)
+                .where("status", "in", [ OrderStatus.CLOSED ])
+                .orderBy("created")
+                .get();
+
+            logger('', '', `Found matching Closed Orders last 1 hour # Size ${orderSnap.size}`);
+
+            resolve(orderSnap.docs.map(snap => new OrderMeta(snap.id, snap.data() as Order)));
+        });
+    }
+
     public findOrderById = (id: string): Promise<Order> => {
         return new Promise<Order>(async (resolve, reject) => {
             const result: FirebaseFirestore.DocumentSnapshot<FirebaseFirestore.DocumentData> = await this.db.collection(this.COLLECTION_NAME).doc(id).get();

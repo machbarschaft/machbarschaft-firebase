@@ -24,9 +24,9 @@ export const spotNextQuestion = (o: Order): Question | null => {
         return getQuestionByIndex(OrderFlow.ASK_FOR_PRIVACY);
     } else if (o.type === null) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_TYPE);
-    } else if (o.type === Type.GROCERIES && !o.extras?.car_necessary) {
+    } else if (o.type === Type.GROCERIES && o.extras?.car_necessary === null) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_EXTRA_GROCERIES);
-    } else if (o.type === Type.MEDICINE && !o.extras?.prescription) {
+    } else if (o.type === Type.MEDICINE && o.extras?.prescription === null) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_EXTRA_MEDICINE);
     } else if (o.urgency === null) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_URGENCY);
