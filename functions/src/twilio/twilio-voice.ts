@@ -10,6 +10,7 @@ import moment from 'moment';
 // tslint:disable-next-line:no-import-side-effect
 import 'moment/locale/de';
 import { getGeoPosByLocation } from './helper/geo-location.helper';
+//import { sendOrderToColiveryAPI } from './helper/colivery.helper';
 import { getQuestionByIndex, spotNextQuestion } from './helper/question.helper';
 import { checkSpeechResult } from './helper/check-answer.helper';
 import { TranslateAnswer } from './service/translate-answer.service';
@@ -19,6 +20,8 @@ export const interview = async (request: functions.Request, response: functions.
     const phoneNumber: string = request.body.From;
     const call_sid: string = request.body.CallSid;
     const input: string = request.body.RecordingUrl || request.body.Digits
+
+    //await sendOrderToColiveryAPI(new OrderMeta("bla", new Order("","")));
 
     const responseId = request.params.responseId;
     const questionIndex = request.params.questionIndex;
@@ -258,6 +261,8 @@ export const interview = async (request: functions.Request, response: functions.
             logger(activeOrder.data.phone_number, activeOrder.id, `Finished Order`);
             await orderDao.changeOrderById(activeOrder.id, { status: OrderStatus.OPEN.toString() });
             addPlayable(Playable.THANK_YOU_BYE);
+            logger("test", "test", JSON.stringify(activeOrder));
+            //await sendOrderToColiveryAPI(activeOrder);
             respond();
             return;
         }

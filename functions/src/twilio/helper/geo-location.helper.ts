@@ -1,6 +1,7 @@
 import { Client, GeocodeResponse, Status } from "@googlemaps/google-maps-services-js";
 import { firestore } from 'firebase-admin';
 import { logger, LogLevel } from './logger.helper';
+import * as functions from 'firebase-functions';
 
 export const getGeoPosByLocation = async (address: string, language: string): Promise<firestore.GeoPoint> => {
     return new Promise((resolve, reject) => {
@@ -9,7 +10,7 @@ export const getGeoPosByLocation = async (address: string, language: string): Pr
                 params: {
                     address,
                     language,
-                    key: process.env.GOOGLE_GEO_API_KEY || ''
+                    key: functions.config().maps.key || ''
                 },
                 timeout: 5000
             }).then((r: GeocodeResponse) => {
