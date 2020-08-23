@@ -280,7 +280,7 @@ export const sendOrderToColiveryAPI = async (order: OrderMeta): Promise<void> =>
     
 };
 
-export const getUser = async (phoneNumber: string): Promise<string> => {
+export const getUser = async (phoneNumber: string): Promise<any> => {
   return new Promise(async (resolve, reject) => {
     const result = await firebase.auth().signInWithEmailAndPassword(functions.config().fbauth.mail || '', functions.config().fbauth.pw || '')
       .catch(function(error) {
@@ -305,7 +305,10 @@ export const getUser = async (phoneNumber: string): Promise<string> => {
             "phoneNumber": phoneNumber
           });
 
-        resolve(userDataRes);
+        resolve({
+          data: userDataRes,
+          authToken: token.toString()
+        });
         
         /*const requestUrl = url.parse(url.format({
           protocol: 'https',
@@ -442,11 +445,11 @@ export const createUser = async (order: OrderMeta): Promise<any> => {
   });
 }
 
-export const createHelpSeeker = async (phoneNumer: string, name: string, token: string): Promise<string> => {
+export const createHelpSeeker = async (phoneNumber: string, name: string, token: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {   
     const createHSData = JSON.stringify({
       fullName: name,
-      phone: phoneNumer,
+      phone: phoneNumber,
       source: 'HOTLINE'
     });
 
@@ -458,11 +461,14 @@ export const createHelpSeeker = async (phoneNumer: string, name: string, token: 
 export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
   return new Promise(async (resolve, reject) => {
     const userResult = await getUser(order.data.phone_number);
-    if(userResult && userResult.length > 0){//user exists
-      const userData = JSON.parse(userResult);
+    if(userResult && userResult.data && userResult.data.length > 0){//user exists
+      const userData = JSON.parse(userResult.data);
       if(userData && userData.id){
         logger(order.data.phone_number, '', 'User has ID '+userData.id);
-        resolve(userData.id);
+        resolve({
+          userID: userData.id,
+          authToken: userResult.authToken
+        });
       }
       else {
         logger(order.data.phone_number, '', 'Returned userdata malformed, trying to create user. Returned data: '+userResult);
@@ -503,5 +509,18 @@ export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
         reject("Could not create user! Response empty.");
       }
     }
+  });
+}
+
+export const createHelpRequest = async (order: OrderMeta, user: any, token: string): Promise<string> => {
+  return new Promise(async (resolve, reject) => {   
+    const createHSData = JSON.stringify({
+      fullName: name,
+      phone: phoneNumer,
+      source: 'HOTLINE'
+    });
+
+    const createDataRes = await coliveryPostApiCall('/v1/help-seeker', token.toString(), createHSData);
+    resolve(createDataRes);
   });
 }
