@@ -23,7 +23,7 @@ export const coliveryPostApiCall = async (path: string, token: string, jsonData:
   return new Promise(async (resolve, reject) => {
     const createUserOptions = {
       hostname: functions.config().colivery.host,
-      port: 443,
+      port: functions.config().colivery.port,
       path: path,
       method: 'POST',
       headers: {
@@ -72,7 +72,7 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
 
     const searchUserOptions = {
       hostname: requestUrl.hostname,
-      port: 443,
+      port: functions.config().colivery.port,
       path: requestUrl.path,
       method: 'GET',
       headers: {
@@ -105,182 +105,29 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
   });
 }
 
-export const sendOrderToColiveryAPI = async (order: OrderMeta): Promise<void> => {
-    //console.log("1 "+JSON.stringify(functions.config()));
-    /*const config = functions.config().firebase;
-    config.apiKey = functions.config().fire.apikey;
-    console.log("Conf: "+JSON.stringify(config));*/
-    firebase.initializeApp(firebaseConfig);
-    
-    
-
-      const createUserData = JSON.stringify({
-          firstName: '',
-          lastName: '',
-          street: '',
-          streetNo: '',
-          zipCode: '12345',
-          city: 'Entenhausen',
-          email: '',
-          location: {
-          longitude: 0,
-          latitude: 0
-          },
-          phone: '+49123456789',
-          source: 'HOTLINE'
-      });
-
-      const createUserOptions = {
-        hostname: 'service-api-ng-nightly-gttzwulpia-ew.a.run.app',
-        port: 443,
-        path: '/v1/user',
-        method: 'POST',
-        headers: {
-             'Content-Type': 'application/json',
-             'Content-Length': createUserData.length,
-             'Authorization': 'Bearer '+token.toString()
-           }
-      };
-
-      let data1 = "";
-
-      const req1 = https.request(createUserOptions, (res) => {
-        console.log('statusCode:', res.statusCode);
-        console.log('headers:'+ JSON.stringify(res.headers,null,0));
-        //console.log("RES: "+util.inspect(res));
-
-        res.on('data', (d) => {
-          data1 += d.toString('utf8');
-        });
-        res.on('end', () => {
-            console.log(data1+" End2");
-            //resolve();
-        });
-      });
-
-      req1.on('error', (e) => {
-        console.error(e);
-      });
-      console.log("POSTED DATA: "+createUserData);
-      req1.write(createUserData);
-      req1.end();
+export const sendOrderToColiveryAPI = async (order: OrderMeta): Promise<string> => {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
       
-      return new Promise((resolve, reject) => {
-          /*const getData = JSON.stringify({
-            "phoneNumber": order.data.phone_number.toString()
-          });*/
-          /*const requestUrl = url.parse(url.format({
-            protocol: 'https',
-            hostname: 'service-api-ng-nightly-gttzwulpia-ew.a.run.app',
-            pathname: '/v1/user/search',
-            query: {
-              phoneNumber: order.data.phone_number.toString()
-            }
-          }));
-          console.log("PATH: "+requestUrl.path);
+    return new Promise(async (resolve, reject) => {
+      console.log("In sendOrderToColiveryAPI");
+      const helpSeekerID = await createOrGetUser(order);
+      if(helpSeekerID && helpSeekerID.length > 0){
+        console.log("helpSeekerID: "+JSON.stringify(helpSeekerID));
+        const hrRes = createHelpRequest(order, helpSeekerID);
+        console.log("hrRes: "+hrRes);
 
-          const options = {
-            hostname: requestUrl.hostname,
-            port: 443,
-            path: requestUrl.path,
-            method: 'GET',
-            headers: {
-              //'Content-Type': 'application/json',
-              //'Content-Length': getData.length,
-              'Authorization': 'Bearer '+token.toString()
-            }
-          };
-
-          let resStr = "";
-
-          const req = https.request(options, (res: http.IncomingMessage) => {
-            console.log('statusCode:', res.statusCode);
-            //console.log('headers:', res.headers);
-
-            res.on('data', (d) => {
-              resStr += d.toString('utf8');
-              //console.log(d.toString('utf8'));
-            });
-            res.on('end', () => {
-                console.log(resStr);
-                console.log("End");
-                resolve();
-            });
-          });
-
-          req.on('error', (e) => {
-            console.error(e);
-          });
-          //req.write(getData);
-          req.end();*/
-          
-
-          //order.data.
-          //https.request(options: string | https.RequestOptions | URL, callback?: ((res: IncomingMessage) => void) | undefined)
-          /*const options = {
-            hostname: 'davidschmidt.dev',
-            port: 443,
-            path: '/',
-            method: 'GET'
-          };
-
-          const req = https.request(options, (res: http.IncomingMessage) => {
-            console.log('statusCode:', res.statusCode);
-            console.log('headers:', res.headers);
-
-            res.on('data', (d) => {
-              console.log(d.toString('utf8'));
-            });
-            res.on('end', () => {
-                console.log("End");
-                //resolve();
-            });
-          });
-
-          req.on('error', (e) => {
-            console.error(e);
-          });
-          req.end();
-
-          const postData = JSON.stringify({msg: 'Hello World!'})
-
-          const options1 = {
-            hostname: 'postman-echo.com',
-            port: 443,
-            path: '/post',
-            method: 'POST',
-            headers: {
-                 'Content-Type': 'application/json',
-                 'Content-Length': postData.length
-               }
-          };
-
-          const req1 = https.request(options1, (res) => {
-            console.log('statusCode:', res.statusCode);
-            console.log('headers:', res.headers);
-
-            res.on('data', (d) => {
-              console.log(d.toString('utf8'));
-            });
-            res.on('end', () => {
-                console.log("End2");
-                //resolve();
-            });
-          });
-
-          req1.on('error', (e) => {
-            console.error(e);
-          });
-
-          req1.write(postData);
-          req1.end();*/
-
-          resolve();
-      });
+        resolve(order.id);
+      }
+      else{
+        reject("Something went wrong!");
+      }
+    });
     
 };
 
-export const getUser = async (phoneNumber: string): Promise<any> => {
+export const authHotline = async (): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     const result = await firebase.auth().signInWithEmailAndPassword(functions.config().fbauth.mail || '', functions.config().fbauth.pw || '')
       .catch(function(error) {
@@ -294,75 +141,19 @@ export const getUser = async (phoneNumber: string): Promise<any> => {
         }
         console.log(error);
       });
-      if(result && result.user){
-        const token = await result.user.getIdToken();
-        console.log("token: "+token);
-
-        const userDataRes = await coliveryGetApiCall(
-          '/v1/user/search', 
-          token.toString(), 
-          {
-            "phoneNumber": phoneNumber
-          });
-
-        resolve({
-          data: userDataRes,
-          authToken: token.toString()
-        });
-        
-        /*const requestUrl = url.parse(url.format({
-          protocol: 'https',
-          hostname: functions.config().colivery.host,
-          pathname: '/v1/user/search',
-          query: {
-            "phoneNumber": phoneNumber
-          }
-        }));
-        console.log("PATH: "+requestUrl.path);
-
-        const searchUserOptions = {
-          hostname: requestUrl.hostname,
-          port: 443,
-          path: requestUrl.path,
-          method: 'GET',
-          headers: {
-            'Authorization': 'Bearer '+token.toString()
-          }
-        };
-
-        let resStr = "";
-
-        const req = https.request(searchUserOptions, (res) => {
-          console.log('statusCode:', res.statusCode);
-          //console.log('headers:', res.headers);
-
-          res.on('data', (d) => {
-            resStr += d.toString('utf8');
-            //console.log(d.toString('utf8'));
-          });
-          res.on('end', () => {
-              console.log(resStr);
-              console.log("End");
-              resolve(resStr);
-          });
-        });
-
-        req.on('error', (e) => {
-          console.error(e);
-        });
-        //req.write(getData);
-        req.end();*/
-        
-      }
-      else{
-        return reject("Could not get token!");
-      }
+    if(result && result.user){
+      resolve(await result.user.getIdToken());
+    }
+    else{
+      console.error("Could not get hotline token!");
+      reject("Could not get hotline token!");
+    }
   });
 }
 
-export const createUser = async (order: OrderMeta): Promise<any> => {
+export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
-    const result = await firebase.auth().signInAnonymously()
+    const result = await firebase.auth().signInWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", phoneNumber)
       .catch(function(error) {
         // Handle Errors here.
         const errorCode = error.code;
@@ -374,78 +165,103 @@ export const createUser = async (order: OrderMeta): Promise<any> => {
         }
         console.log(error);
       });
-      if(result && result.user){
-        const token = await result.user.getIdToken();
-        console.log("token: "+token);
-
-        const createUserData = JSON.stringify({
-            firstName: order.data.name || '',
-            lastName: '',
-            street: order.data.address?.street || '',
-            streetNo: order.data.address?.house_number || '',
-            zipCode: order.data.address?.zip || '',
-            city: order.data.address?.city || '',
-            email: '',
-            location: {
-            longitude: order.data.location?.gps?.longitude || 0,
-            latitude: order.data.location?.gps?.latitude || 0
-            },
-            phone: order.data.phone_number || '',
-            source: 'HOTLINE'
-        });
-
-        const createDataRes = await coliveryPostApiCall('/v1/user', token.toString(), createUserData);
-        console.log("Created user, result: "+createDataRes);
-        const hsRes = await createHelpSeeker(order.data.phone_number, order.data.name || '', token.toString());
-        console.log("HS result: "+hsRes);
-        resolve({
-          dataCU: createDataRes,
-          dataHS: hsRes,
-          authToken: token.toString()
-        });
-
-        /*const createUserOptions = {
-          hostname: functions.config().colivery.host,
-          port: 443,
-          path: '/v1/user',
-          method: 'POST',
-          headers: {
-               'Content-Type': 'application/json',
-               'Content-Length': createUserData.length,
-               'Authorization': 'Bearer '+token.toString()
-             }
-        };
-
-        let resStr = "";
-
-        const req = https.request(createUserOptions, (res) => {
-          console.log('statusCode:', res.statusCode);
-          console.log('headers:'+ JSON.stringify(res.headers,null,0));
-          //console.log("RES: "+util.inspect(res));
-
-          res.on('data', (d) => {
-            resStr += d.toString('utf8');
-          });
-          res.on('end', () => {
-              console.log(resStr+" End2");
-              resolve(resStr);
-          });
-        });
-
-        req.on('error', (e) => {
-          console.error(e);
-        });
-        console.log("POSTED DATA: "+createUserData);
-        req.write(createUserData);
-        req.end();*/
-      }
-      else{
-        return reject("Could not get token!");
-      }
+    if(result && result.user){
+      resolve(await result.user.getIdToken());
+    }
+    else{
+      console.error("Could not get hotline user token!");
+      reject("Could not get hotline user token!");
+    }
   });
 }
 
-export const createHelpSeeker = async (phoneNumber: string, name: string, token: string): Promise<string> => {
+export const createHotlineUser = async (phoneNumber: string): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    const result = await firebase.auth().createUserWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", phoneNumber)
+      .catch(function(error) {
+        console.log(error);
+      });
+    if(result && result.user){
+      resolve(await result.user.getIdToken());
+    }
+    else{
+      console.error("Could not create hotline user!");
+      reject("Could not create hotline user!");
+    }
+  });
+}
+
+export const getUser = async (phoneNumber: string): Promise<any> => {
+  return new Promise(async (resolve, reject) => {
+    authHotline().then(async (token: string) => {
+      console.log("token: "+token);
+
+      const userDataRes = await coliveryGetApiCall(
+        '/v1/user/search', 
+        token.toString(), 
+        {
+          "phoneNumber": phoneNumber
+        });
+
+      resolve(userDataRes);      
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
+  });
+}
+
+export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
+  return new Promise(async (resolve, reject) => {
+    authHotline().then(async (token: string) => {
+      console.log("token: "+token);
+
+      const hsDataRes = await coliveryGetApiCall(
+        '/v1/help-seeker/search', 
+        token.toString(), 
+        {
+          "phoneNumber": phoneNumber
+        });
+
+      resolve(hsDataRes);      
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
+  });
+}
+
+export const createUser = async (order: OrderMeta): Promise<any> => {
+  return new Promise(async (resolve, reject) => {
+    createHotlineUser(order.data.phone_number).then(async (token: string) => {
+      console.log("token: "+token);
+
+      const createUserData = JSON.stringify({
+          firstName: order.data.name || '',
+          lastName: '',
+          street: order.data.address?.street || '',
+          streetNo: order.data.address?.house_number || '',
+          zipCode: order.data.address?.zip || '',
+          city: order.data.address?.city || '',
+          email: '',
+          location: {
+          longitude: order.data.location?.gps?.longitude || 0,
+          latitude: order.data.location?.gps?.latitude || 0
+          },
+          phone: order.data.phone_number || '',
+          source: 'HOTLINE'
+      });
+
+      const createDataRes = await coliveryPostApiCall('/v1/user', token.toString(), createUserData);
+      console.log("Created user, result: "+createDataRes);
+      const hsRes = await createHelpSeekerToken(order.data.phone_number, order.data.name || '', token.toString());
+      console.log("HS result: "+hsRes);
+      resolve(hsRes);
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
+  });
+}
+
+export const createHelpSeekerToken = async (phoneNumber: string, name: string, token: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {   
     const createHSData = JSON.stringify({
       fullName: name,
@@ -458,28 +274,56 @@ export const createHelpSeeker = async (phoneNumber: string, name: string, token:
   });
 }
 
+export const createHelpSeeker = async (phoneNumber: string, name: string): Promise<string> => {
+  return new Promise(async (resolve, reject) => {  
+    authHotlineUser(phoneNumber).then(async (token: string) => {
+      const createDataRes = await createHelpSeekerToken(phoneNumber, name, token);
+      resolve(createDataRes);
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
+  });
+}
+
 export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
   return new Promise(async (resolve, reject) => {
     const userResult = await getUser(order.data.phone_number);
-    if(userResult && userResult.data && userResult.data.length > 0){//user exists
-      const userData = JSON.parse(userResult.data);
+    console.log(userResult);
+    if(userResult && userResult.length > 0){//user exists
+      const userData = JSON.parse(userResult);
       if(userData && userData.id){
         logger(order.data.phone_number, '', 'User has ID '+userData.id);
-        resolve({
-          userID: userData.id,
-          authToken: userResult.authToken
-        });
+        const hsResult = await getHelpSeeker(order.data.phone_number);
+        if(hsResult && hsResult.length > 0){//help seeker exists
+          const hsData = JSON.parse(hsResult);
+          if(hsData && hsData.id){
+            logger(order.data.phone_number, '', 'Help seeker has ID '+hsData.id);
+            resolve(hsData.id);
+          }
+        }
+        else{//help seeker does not exist
+          const createResult = await createHelpSeeker(order.data.phone_number, order.data.name || '');
+          if(createResult && createResult && createResult.length > 0){
+            const createData = JSON.parse(createResult);
+            if(createData && createData.id){
+              resolve(createData.id);
+            }
+            else {
+              reject("Could not create help seeker! Respone malformed.");
+            }
+          }
+          else {
+            reject("Could not create help seeker! Response empty.");
+          }
+        }
       }
       else {
         logger(order.data.phone_number, '', 'Returned userdata malformed, trying to create user. Returned data: '+userResult);
-        const createResult = await createUser(order);
-        if(createResult && createResult.dataCU && createResult.dataCU.length > 0){
-          const createData = JSON.parse(createResult.dataCU);
+        const createResult = await createUser(order);//creates user and help seeker, returns help seeker data
+        if(createResult && createResult.length > 0){
+          const createData = JSON.parse(createResult);
           if(createData && createData.id){
-            resolve({
-              userID: createData.id,
-              authToken: createResult.authToken
-            });
+            resolve(createData.id);
           }
           else {
             reject("Could not create user! Respone malformed.");
@@ -493,13 +337,10 @@ export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
     else {//user does not exist
       logger(order.data.phone_number, '', 'User does not exist, trying to create user.');
       const createResult = await createUser(order);
-      if(createResult && createResult.dataCU && createResult.dataCU.length > 0){
-        const createData = JSON.parse(createResult.dataCU);
+      if(createResult && createResult && createResult.length > 0){
+        const createData = JSON.parse(createResult);
         if(createData && createData.id){
-          resolve({
-            userID: createData.id,
-            authToken: createResult.authToken
-          });
+          resolve(createData.id);
         }
         else {
           reject("Could not create user! Respone malformed.");
@@ -512,15 +353,30 @@ export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
   });
 }
 
-export const createHelpRequest = async (order: OrderMeta, user: any, token: string): Promise<string> => {
-  return new Promise(async (resolve, reject) => {   
-    const createHSData = JSON.stringify({
-      fullName: name,
-      phone: phoneNumer,
-      source: 'HOTLINE'
-    });
+export const createHelpString = (order: OrderMeta): string => {
+  let ret = "";
+  ret += "Typ: "+order.data.type+", ";
+  ret += "Auto notwendig: "+(order.data.extras?.car_necessary ? "ja" : "nein")+", ";
+  ret += "Rezept notwendig: "+(order.data.extras?.prescription ? "ja" : "nein")+", ";
+  ret += "Dringlichkeit: "+order.data.urgency+", ";
+  ret += "Erstellt am: "+order.data.created+", ";
 
-    const createDataRes = await coliveryPostApiCall('/v1/help-seeker', token.toString(), createHSData);
-    resolve(createDataRes);
+  return ret;
+}
+
+export const createHelpRequest = async (order: OrderMeta, helpSeekerID: string): Promise<string> => {
+  return new Promise(async (resolve, reject) => {  
+    authHotlineUser(order.data.phone_number).then(async (token: string) => {
+      const createHRData = JSON.stringify({
+        helpSeeker: helpSeekerID,
+        requestText: createHelpString(order),
+        requestStatus: 'OPEN'
+      });
+
+      const createDataRes = await coliveryPostApiCall('/v1/help-request', token.toString(), createHRData);
+      resolve(createDataRes);
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
   });
 }

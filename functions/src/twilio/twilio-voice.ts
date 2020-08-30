@@ -21,7 +21,7 @@ export const interview = async (request: functions.Request, response: functions.
     const call_sid: string = request.body.CallSid;
     const input: string = request.body.RecordingUrl || request.body.Digits
 
-    await sendOrderToColiveryAPI(new OrderMeta("bla", new Order("+49123456789","")));
+    //await sendOrderToColiveryAPI(new OrderMeta("bla", new Order("+49123456789","abc")));
 
     const responseId = request.params.responseId;
     const questionIndex = request.params.questionIndex;
@@ -262,8 +262,9 @@ export const interview = async (request: functions.Request, response: functions.
             await orderDao.changeOrderById(activeOrder.id, { status: OrderStatus.OPEN.toString() });
             addPlayable(Playable.THANK_YOU_BYE);
             logger("test", "test", JSON.stringify(activeOrder));
-            //await sendOrderToColiveryAPI(activeOrder);
-            //await orderDao.deleteOrderById(activeOrder.id);//or in .then(...)?
+            await sendOrderToColiveryAPI(activeOrder).then(async (id: string)=>{
+                await orderDao.deleteOrderById(id);
+            });
             respond();
             return;
         }
