@@ -21,7 +21,9 @@ export const interview = async (request: functions.Request, response: functions.
     const call_sid: string = request.body.CallSid;
     const input: string = request.body.RecordingUrl || request.body.Digits
 
-    //await sendOrderToColiveryAPI(new OrderMeta("bla", new Order("+49123456789","abc")));
+    //const pn = "+49123445";
+
+    //await sendOrderToColiveryAPI(new OrderMeta(pn, new Order(pn,pn)));
 
     const responseId = request.params.responseId;
     const questionIndex = request.params.questionIndex;

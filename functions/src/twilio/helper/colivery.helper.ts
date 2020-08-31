@@ -21,6 +21,7 @@ const firebaseConfig = {
 
 export const coliveryPostApiCall = async (path: string, token: string, jsonData: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
+    console.log("PATH POST: "+path);
     const createUserOptions = {
       hostname: functions.config().colivery.host,
       port: functions.config().colivery.port,
@@ -68,7 +69,7 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
       pathname: path,
       query: jsonData || {}
     }));
-    console.log("PATH: "+requestUrl.path);
+    console.log("PATH GET: "+requestUrl.path);
 
     const searchUserOptions = {
       hostname: requestUrl.hostname,
@@ -142,6 +143,7 @@ export const authHotline = async (): Promise<string> => {
         console.log(error);
       });
     if(result && result.user){
+      console.log("Authed firebase hotline: "+functions.config().fbauth.mail+" "+await result.user.getIdToken());
       resolve(await result.user.getIdToken());
     }
     else{
@@ -166,6 +168,7 @@ export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
         console.log(error);
       });
     if(result && result.user){
+      console.log("Authed firebase hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" "+await result.user.getIdToken());
       resolve(await result.user.getIdToken());
     }
     else{
@@ -182,6 +185,7 @@ export const createHotlineUser = async (phoneNumber: string): Promise<string> =>
         console.log(error);
       });
     if(result && result.user){
+      console.log("Created firebase hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" "+await result.user.getIdToken());
       resolve(await result.user.getIdToken());
     }
     else{
@@ -216,11 +220,9 @@ export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
       console.log("token: "+token);
 
       const hsDataRes = await coliveryGetApiCall(
-        '/v1/help-seeker/search', 
+        '/v1/help-seeker/search/'+phoneNumber, 
         token.toString(), 
-        {
-          "phoneNumber": phoneNumber
-        });
+        {});
 
       resolve(hsDataRes);      
     }).catch((reason: any) => {
@@ -358,8 +360,8 @@ export const createHelpString = (order: OrderMeta): string => {
   ret += "Typ: "+order.data.type+", ";
   ret += "Auto notwendig: "+(order.data.extras?.car_necessary ? "ja" : "nein")+", ";
   ret += "Rezept notwendig: "+(order.data.extras?.prescription ? "ja" : "nein")+", ";
-  ret += "Dringlichkeit: "+order.data.urgency+", ";
-  ret += "Erstellt am: "+order.data.created+", ";
+  ret += "Dringlichkeit: "+order.data.urgency+"";
+  //ret += "Erstellt am: "+order.data.created+", ";
 
   return ret;
 }
