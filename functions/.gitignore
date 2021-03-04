@@ -7,6 +7,5 @@ typings/
 
 node_modules/
 
-setKeys.sh
-setKeysLocal.sh
+*.sh
 .runtimeconfig.json

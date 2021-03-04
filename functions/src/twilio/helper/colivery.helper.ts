@@ -28,7 +28,7 @@ export const coliveryPostApiCall = async (path: string, token: string, jsonData:
       path: path,
       method: 'POST',
       headers: {
-           'Content-Type': 'application/json',
+           'Content-Type': 'application/json; charset=utf-8',
            'Content-Length': jsonData.length,
            'Authorization': 'Bearer '+token
          }
@@ -69,7 +69,7 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
       pathname: path,
       query: jsonData || {}
     }));
-    console.log("PATH GET: "+requestUrl.path);
+    console.log("PATH GET: "+requestUrl.hostname+requestUrl.path);
 
     const searchUserOptions = {
       hostname: requestUrl.hostname,
@@ -129,6 +129,9 @@ export const sendOrderToColiveryAPI = async (order: OrderMeta): Promise<string> 
 };
 
 export const authHotline = async (): Promise<string> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     const result = await firebase.auth().signInWithEmailAndPassword(functions.config().fbauth.mail || '', functions.config().fbauth.pw || '')
       .catch(function(error) {
@@ -154,6 +157,9 @@ export const authHotline = async (): Promise<string> => {
 }
 
 export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     const result = await firebase.auth().signInWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", phoneNumber)
       .catch(function(error) {
@@ -179,6 +185,9 @@ export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
 }
 
 export const createHotlineUser = async (phoneNumber: string): Promise<string> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     const result = await firebase.auth().createUserWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", phoneNumber)
       .catch(function(error) {
@@ -196,6 +205,9 @@ export const createHotlineUser = async (phoneNumber: string): Promise<string> =>
 }
 
 export const getUser = async (phoneNumber: string): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     authHotline().then(async (token: string) => {
       console.log("token: "+token);
@@ -215,6 +227,9 @@ export const getUser = async (phoneNumber: string): Promise<any> => {
 }
 
 export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     authHotline().then(async (token: string) => {
       console.log("token: "+token);
@@ -232,25 +247,28 @@ export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
 }
 
 export const createUser = async (order: OrderMeta): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     createHotlineUser(order.data.phone_number).then(async (token: string) => {
       console.log("token: "+token);
 
-      const createUserData = JSON.stringify({
+      const createUserData = umlautSanitizer(JSON.stringify({
           firstName: order.data.name || '',
-          lastName: '',
+          lastName: order.data.name || '',
           street: order.data.address?.street || '',
           streetNo: order.data.address?.house_number || '',
           zipCode: order.data.address?.zip || '',
           city: order.data.address?.city || '',
-          email: '',
+          email: order.data.phone_number+'@machbarschaft.jetzt' || '',
           location: {
-          longitude: order.data.location?.gps?.longitude || 0,
-          latitude: order.data.location?.gps?.latitude || 0
+          longitude: order.data.location?.gps?.longitude.toString() || 0,
+          latitude: order.data.location?.gps?.latitude.toString() || 0
           },
           phone: order.data.phone_number || '',
           source: 'HOTLINE'
-      });
+      }));
 
       const createDataRes = await coliveryPostApiCall('/v1/user', token.toString(), createUserData);
       console.log("Created user, result: "+createDataRes);
@@ -264,6 +282,9 @@ export const createUser = async (order: OrderMeta): Promise<any> => {
 }
 
 export const createHelpSeekerToken = async (phoneNumber: string, name: string, token: string): Promise<string> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {   
     const createHSData = JSON.stringify({
       fullName: name,
@@ -277,6 +298,9 @@ export const createHelpSeekerToken = async (phoneNumber: string, name: string, t
 }
 
 export const createHelpSeeker = async (phoneNumber: string, name: string): Promise<string> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {  
     authHotlineUser(phoneNumber).then(async (token: string) => {
       const createDataRes = await createHelpSeekerToken(phoneNumber, name, token);
@@ -288,6 +312,9 @@ export const createHelpSeeker = async (phoneNumber: string, name: string): Promi
 }
 
 export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {
     const userResult = await getUser(order.data.phone_number);
     console.log(userResult);
@@ -311,11 +338,11 @@ export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
               resolve(createData.id);
             }
             else {
-              reject("Could not create help seeker! Respone malformed.");
+              reject("Could not create help seeker! Respone malformed 1.");
             }
           }
           else {
-            reject("Could not create help seeker! Response empty.");
+            reject("Could not create help seeker! Response empty 1.");
           }
         }
       }
@@ -328,28 +355,29 @@ export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
             resolve(createData.id);
           }
           else {
-            reject("Could not create user! Respone malformed.");
+            reject("Could not create user! Respone malformed 2.");
           }
         }
         else {
-          reject("Could not create user! Response empty.");
+          reject("Could not create user! Response empty 2.");
         }
       }
     }
     else {//user does not exist
       logger(order.data.phone_number, '', 'User does not exist, trying to create user.');
       const createResult = await createUser(order);
-      if(createResult && createResult && createResult.length > 0){
+      if(createResult && createResult.length > 0){
         const createData = JSON.parse(createResult);
         if(createData && createData.id){
           resolve(createData.id);
         }
         else {
-          reject("Could not create user! Respone malformed.");
+          reject("Could not create user! Respone malformed. 3");
         }
       }
       else {
-        reject("Could not create user! Response empty.");
+        console.log(createResult);
+        reject("Could not create user! Response empty. 3");
       }
     }
   });
@@ -366,7 +394,17 @@ export const createHelpString = (order: OrderMeta): string => {
   return ret;
 }
 
+export const umlautSanitizer = (str: String): string => {
+  return str.replace(/\u00dc/g, "Ue").replace(/\u00fc/g, "ue")
+    .replace(/\u00c4/g, "Ae").replace(/\u00e4/g, "ae")
+    .replace(/\u00d6/g, "Oe").replace(/\u00f6/g, "oe")
+    .replace(/\u00df/g, "ss");
+}
+
 export const createHelpRequest = async (order: OrderMeta, helpSeekerID: string): Promise<string> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   return new Promise(async (resolve, reject) => {  
     authHotlineUser(order.data.phone_number).then(async (token: string) => {
       const createHRData = JSON.stringify({
