@@ -101,8 +101,13 @@ export const QUESTIONS: Question[] = [
         answerType: AnswerType.FREE_ANSWER
     },
     {
-        index: OrderFlow.ASK_FOR_ADDRESS_HOUSE_NUMBER,
-        announcementSource: Playable.ASK_FOR_ADDRESS_HOUSE_NUMBER,
+        index: OrderFlow.ASK_FOR_ADDRESS_ZIP,
+        announcementSource: Playable.ASK_FOR_ADDRESS_ZIP,
+        answerType: AnswerType.FREE_ANSWER
+    },
+    {
+        index: OrderFlow.ASK_FOR_ADDRESS_CITY,
+        announcementSource: Playable.ASK_FOR_ADDRESS_CITY,
         answerType: AnswerType.FREE_ANSWER
     },
     {
@@ -111,13 +116,8 @@ export const QUESTIONS: Question[] = [
         answerType: AnswerType.FREE_ANSWER
     },
     {
-        index: OrderFlow.ASK_FOR_ADDRESS_ZIP,
-        announcementSource: Playable.ASK_FOR_ADDRESS_ZIP,
-        answerType: AnswerType.FREE_ANSWER
-    },
-    {
-        index: OrderFlow.ASK_FOR_ADDRESS_CITY,
-        announcementSource: Playable.ASK_FOR_ADDRESS_CITY,
+        index: OrderFlow.ASK_FOR_ADDRESS_HOUSE_NUMBER,
+        announcementSource: Playable.ASK_FOR_ADDRESS_HOUSE_NUMBER,
         answerType: AnswerType.FREE_ANSWER
     },
     {

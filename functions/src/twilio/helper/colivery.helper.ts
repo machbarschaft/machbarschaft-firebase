@@ -1,6 +1,6 @@
 //import { logger, LogLevel } from './logger.helper';
 //import { OrderDao } from './model/order.dao';
-import { OrderMeta } from '../model/order.model';
+import * as om from '../model/order.model';
 import * as https from "https";
 //import * as http from "http";
 import * as functions from 'firebase-functions';
@@ -106,7 +106,7 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
   });
 }
 
-export const sendOrderToColiveryAPI = async (order: OrderMeta): Promise<string> => {
+export const sendOrderToColiveryAPI = async (order: om.OrderMeta): Promise<string> => {
     if (!firebase.apps.length) {
       firebase.initializeApp(firebaseConfig);
     }
@@ -246,7 +246,7 @@ export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
   });
 }
 
-export const createUser = async (order: OrderMeta): Promise<any> => {
+export const createUser = async (order: om.OrderMeta): Promise<any> => {
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
@@ -311,7 +311,7 @@ export const createHelpSeeker = async (phoneNumber: string, name: string): Promi
   });
 }
 
-export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
+export const createOrGetUser = async (order: om.OrderMeta): Promise<any> => {
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
@@ -383,12 +383,54 @@ export const createOrGetUser = async (order: OrderMeta): Promise<any> => {
   });
 }
 
-export const createHelpString = (order: OrderMeta): string => {
+export const typeToString = (type: om.Type | null): string => {
+    switch (type) {
+      case om.Type.MEDICINE:
+        return "Medizin"
+        break;
+
+      case om.Type.GROCERIES:
+        return "Einkaufen"
+        break;
+
+      case om.Type.OTHER:
+        return "Sonstiges"
+        break;
+      
+      default:
+        return ""
+        break;
+    }
+}
+
+export const urgencyToString = (type: om.Urgency | null): string => {
+    switch (type) {
+      case om.Urgency.ASAP:
+        return "So schnell wie möglich"
+        break;
+
+      case om.Urgency.TODAY:
+        return "Heute"
+        break;
+
+      case om.Urgency.TOMORROW:
+        return "Morgen"
+        break;
+      
+      default:
+        return ""
+        break;
+    }
+}
+
+export const createHelpString = (order: om.OrderMeta): string => {
   let ret = "";
-  ret += "Typ: "+order.data.type+", ";
-  ret += "Auto notwendig: "+(order.data.extras?.car_necessary ? "ja" : "nein")+", ";
-  ret += "Rezept notwendig: "+(order.data.extras?.prescription ? "ja" : "nein")+", ";
-  ret += "Dringlichkeit: "+order.data.urgency+"";
+  ret += "Typ: "+typeToString(order.data.type)+"\n";//TODO: improve
+  if(order.data.extras?.car_necessary || order.data.extras?.car_necessary === false)
+    ret += "Auto notwendig: "+(order.data.extras?.car_necessary ? "ja" : "nein")+"\n";
+  if(order.data.extras?.prescription || order.data.extras?.prescription === false)
+    ret += "Rezept notwendig: "+(order.data.extras?.prescription ? "ja" : "nein")+"\n";
+  ret += "Dringlichkeit: "+urgencyToString(order.data.urgency);
   //ret += "Erstellt am: "+order.data.created+", ";
 
   return ret;
@@ -401,17 +443,17 @@ export const umlautSanitizer = (str: String): string => {
     .replace(/\u00df/g, "ss");
 }
 
-export const createHelpRequest = async (order: OrderMeta, helpSeekerID: string): Promise<string> => {
+export const createHelpRequest = async (order: om.OrderMeta, helpSeekerID: string): Promise<string> => {
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   return new Promise(async (resolve, reject) => {  
     authHotlineUser(order.data.phone_number).then(async (token: string) => {
-      const createHRData = JSON.stringify({
+      const createHRData = umlautSanitizer(JSON.stringify({
         helpSeeker: helpSeekerID,
         requestText: createHelpString(order),
         requestStatus: 'OPEN'
-      });
+      }));
 
       const createDataRes = await coliveryPostApiCall('/v1/help-request', token.toString(), createHRData);
       resolve(createDataRes);

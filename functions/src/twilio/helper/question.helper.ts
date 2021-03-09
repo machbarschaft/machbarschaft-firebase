@@ -32,14 +32,14 @@ export const spotNextQuestion = (o: Order): Question | null => {
         return getQuestionByIndex(OrderFlow.ASK_FOR_URGENCY);
     } else if (o.name === null) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_NAME);
-    } else if (o.address && !o.address.house_number) {
-        return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_HOUSE_NUMBER);
-    } else if (o.address && !o.address.street) {
-        return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_STREET);
     } else if (o.address && !o.address.zip) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_ZIP);
     } else if (o.address && !o.address.city) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_CITY);
+    } else if (o.address && !o.address.street) {
+        return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_STREET);
+    } else if (o.address && !o.address.house_number) {
+        return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_HOUSE_NUMBER);
     } else if (!o.location?.gps || !o.location?.geohash) {
         return getQuestionByIndex(OrderFlow.ASK_FOR_ADDRESS_RECHECK);
     } else if (o.address && !o.address.confirmed) {
