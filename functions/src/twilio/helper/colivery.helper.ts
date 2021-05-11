@@ -7,6 +7,8 @@ import * as functions from 'firebase-functions';
 import * as firebase from 'firebase';
 import * as url from 'url';
 import { logger } from './logger.helper';
+
+import * as crypto from 'crypto';
 //import * as util from 'util'
 const firebaseConfig = {
   apiKey: functions.config().fire.apikey,
@@ -18,6 +20,15 @@ const firebaseConfig = {
   appId: functions.config().fire.appid,
   measurementId: functions.config().fire.measurementid
 };
+
+function checksum(str: string) {//, algorithm, encoding
+  let res = str;
+  res = functions.config().pepper.pre + res + functions.config().pepper.post;
+  return crypto
+    .createHash('sha256')
+    .update(res, 'utf8')
+    .digest('hex');
+}
 
 export const coliveryPostApiCall = async (path: string, token: string, jsonData: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
@@ -161,7 +172,7 @@ export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
     firebase.initializeApp(firebaseConfig);
   }
   return new Promise(async (resolve, reject) => {
-    const result = await firebase.auth().signInWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", phoneNumber)
+    const result = await firebase.auth().signInWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", checksum(phoneNumber))
       .catch(function(error) {
         // Handle Errors here.
         const errorCode = error.code;
@@ -174,11 +185,11 @@ export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
         console.log(error);
       });
     if(result && result.user){
-      console.log("Authed firebase hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" "+await result.user.getIdToken());
+      console.log("Authed firebase hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" pw: "+checksum(phoneNumber)+" "+await result.user.getIdToken());
       resolve(await result.user.getIdToken());
     }
     else{
-      console.error("Could not get hotline user token!");
+      console.error("Could not get hotline user token for hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" pw: "+checksum(phoneNumber));
       reject("Could not get hotline user token!");
     }
   });
@@ -189,16 +200,16 @@ export const createHotlineUser = async (phoneNumber: string): Promise<string> =>
     firebase.initializeApp(firebaseConfig);
   }
   return new Promise(async (resolve, reject) => {
-    const result = await firebase.auth().createUserWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", phoneNumber)
+    const result = await firebase.auth().createUserWithEmailAndPassword(phoneNumber+"@machbarschaft.jetzt", checksum(phoneNumber))
       .catch(function(error) {
         console.log(error);
       });
     if(result && result.user){
-      console.log("Created firebase hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" "+await result.user.getIdToken());
+      console.log("Created firebase hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" pw: "+checksum(phoneNumber)+" "+await result.user.getIdToken());
       resolve(await result.user.getIdToken());
     }
     else{
-      console.error("Could not create hotline user!");
+      console.error("Could not create hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" pw: "+checksum(phoneNumber));
       reject("Could not create hotline user!");
     }
   });
