@@ -30,6 +30,48 @@ function checksum(str: string) {//, algorithm, encoding
     .digest('hex');
 }
 
+export const coliveryPutApiCall = async (path: string, token: string, jsonData: string): Promise<string> => {
+  return new Promise(async (resolve, reject) => {
+    console.log("PATH PUT: "+path);
+    const createUserOptions = {
+      hostname: functions.config().colivery.host,
+      port: functions.config().colivery.port,
+      path: path,
+      method: 'PUT',
+      headers: {
+           'Content-Type': 'application/json; charset=utf-8',
+           'Content-Length': jsonData.length,
+           'Authorization': 'Bearer '+token
+         }
+    };
+
+    let resStr = "";
+
+    const req = https.request(createUserOptions, (res) => {
+      console.log('statusCode:', res.statusCode);
+      console.log('headers:'+ JSON.stringify(res.headers,null,0));
+      //console.log("RES: "+util.inspect(res));
+
+      res.on('data', (d) => {
+        resStr += d.toString('utf8');
+      });
+      res.on('end', () => {
+          console.log(resStr);
+          console.log("EndPUT");
+          resolve(resStr);
+      });
+    });
+
+    req.on('error', (e) => {
+      console.error(e);
+      reject(e);
+    });
+    console.log("PUTTED DATA: "+jsonData);
+    req.write(jsonData);
+    req.end();
+  });
+}
+
 export const coliveryPostApiCall = async (path: string, token: string, jsonData: string): Promise<string> => {
   return new Promise(async (resolve, reject) => {
     console.log("PATH POST: "+path);
@@ -253,6 +295,63 @@ export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
       resolve(hsDataRes);      
     }).catch((reason: any) => {
       reject("Could not get token!");
+    });
+  });
+}
+
+export const getHelpRequests = async (phoneNumber: string): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  return new Promise(async (resolve, reject) => {
+    authHotlineUser(phoneNumber).then(async (token: string) => {
+      console.log("token: "+token);
+
+      const allHelpRequests = await coliveryGetApiCall(
+        "/v1/help-request", 
+        token.toString(), 
+        "");
+
+      const result = JSON.parse(allHelpRequests)
+        .filter((r: any) => (r?.helpSeeker?.phone === phoneNumber 
+                              && !(r?.requestStatus === "CLOSED" || r?.requestStatus === "DELETED")));
+      //console.log("pre");
+      //console.log(JSON.parse(allHelpRequests).toString());
+      //console.log("post");
+      //console.log(result.toString());
+      resolve(result);      
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
+  });
+}
+
+export const deleteLatestHelpRequest = async (phoneNumber: string): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  return new Promise(async (resolve, reject) => {
+    getHelpRequests(phoneNumber).then(async (requests: any) => {
+
+      if(Object.keys(requests).length > 0){
+        console.log("ID: "+requests[0]?.id)
+        authHotlineUser(phoneNumber).then(async (token: string) => {
+          const dataRes = await coliveryPutApiCall(
+            '/v1/help-request/'+requests[0]?.id+'/status', 
+            token.toString(), 
+            JSON.stringify({"status": "DELETED"}));
+
+          console.log("Status update result: "+dataRes);
+          resolve(dataRes); 
+        }).catch((reason: any) => {
+          reject("Could not get token!");
+        });
+      }
+      else {
+        reject("No help requests saved!");
+      }     
+    }).catch((reason: any) => {
+      reject("Could not get help requests!");
     });
   });
 }

@@ -10,7 +10,7 @@ import moment from 'moment';
 // tslint:disable-next-line:no-import-side-effect
 import 'moment/locale/de';
 import { getGeoPosByLocation } from './helper/geo-location.helper';
-import { sendOrderToColiveryAPI } from './helper/colivery.helper';
+import { sendOrderToColiveryAPI } from './helper/colivery.helper';//deleteLatestHelpRequest
 import { getQuestionByIndex, spotNextQuestion } from './helper/question.helper';
 import { checkSpeechResult } from './helper/check-answer.helper';
 import { TranslateAnswer } from './service/translate-answer.service';
@@ -20,6 +20,19 @@ export const interview = async (request: functions.Request, response: functions.
     const phoneNumber: string = request.body.From;
     const call_sid: string = request.body.CallSid;
     const input: string = request.body.RecordingUrl || request.body.Digits
+
+    //console.log(getHelpRequests("+49235128809"));
+    //deleteLatestHelpRequest("+49235128809");
+
+    /*authHotlineUser("+49235128809").then(async (token: string) => {
+        coliveryGetApiCall("/v1/help-request", token, "").then((res: string) => {
+            console.log(res);
+        }).catch((reason: any) => {
+        console.log(reason);
+        });
+    }).catch((reason: any) => {
+        console.log(reason);
+    });*/
 
     //const pn = "+4988498689864984";
     //await sendOrderToColiveryAPI(new OrderMeta(pn, new Order(pn,pn)));
