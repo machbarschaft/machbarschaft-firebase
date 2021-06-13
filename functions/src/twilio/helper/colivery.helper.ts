@@ -145,7 +145,7 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
         //console.log(d.toString('utf8'));
       });
       res.on('end', () => {
-          console.log(resStr);
+          console.log("GET length: "+resStr.length.toString());
           console.log("EndGET");
           resolve(resStr);
       });

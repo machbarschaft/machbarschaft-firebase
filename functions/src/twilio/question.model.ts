@@ -20,5 +20,6 @@ export enum AnswerType {
 export enum UserInput {
     ADDRESS = "address",
     CREATE_DATE = "create_Date",
+    CREATE_DATE_OPEN = "create_Date_Open",
     NAME = "name"
 }

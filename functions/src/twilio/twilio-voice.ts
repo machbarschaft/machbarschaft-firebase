@@ -10,7 +10,7 @@ import moment from 'moment';
 // tslint:disable-next-line:no-import-side-effect
 import 'moment/locale/de';
 import { getGeoPosByLocation } from './helper/geo-location.helper';
-import { sendOrderToColiveryAPI } from './helper/colivery.helper';//deleteLatestHelpRequest
+import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests } from './helper/colivery.helper';//
 import { getQuestionByIndex, spotNextQuestion } from './helper/question.helper';
 import { checkSpeechResult } from './helper/check-answer.helper';
 import { TranslateAnswer } from './service/translate-answer.service';
@@ -22,7 +22,7 @@ export const interview = async (request: functions.Request, response: functions.
     const input: string = request.body.RecordingUrl || request.body.Digits
 
     //console.log(getHelpRequests("+49235128809"));
-    //deleteLatestHelpRequest("+49235128809");
+    //await deleteLatestHelpRequest("+49235128809");
 
     /*authHotlineUser("+49235128809").then(async (token: string) => {
         coliveryGetApiCall("/v1/help-request", token, "").then((res: string) => {
@@ -136,11 +136,13 @@ export const interview = async (request: functions.Request, response: functions.
                     switch (question.index) {
                         case OrderFlow.ASK_FOR_OPEN_ORDER:
                             if (answer) {
+                                await deleteLatestHelpRequest(phoneNumber);
                                 await orderDao.deleteOrderById(responseId);
                                 addPlayable(Playable.ORDER_DELETED);
                                 skipGathering = true;
                             } else {
                                 addPlayable(Playable.ORDER_KEEPED);
+                                skipGathering = true;
                             }
 
                             break;
@@ -242,14 +244,21 @@ export const interview = async (request: functions.Request, response: functions.
     if (!skipGathering) {
         // Find Current Order or Create New Order
         const orders: OrderMeta[] = await orderDao.findOrCreateActiveOrdersByPhoneNumber(phoneNumber, call_sid);
-        const ongoingOrder: OrderMeta | undefined = orders.find((o: OrderMeta) => o.data.status === OrderStatus.OPEN || o.data.status === OrderStatus.IN_PROGRESS);
+        //const ongoingOrder: OrderMeta | undefined = orders.find((o: OrderMeta) => o.data.status === OrderStatus.OPEN || o.data.status === OrderStatus.IN_PROGRESS);
+        const activeRequests: any = await getHelpRequests(phoneNumber);
+
 
         let nextQuestion: Question | null;
         let activeOrder: OrderMeta | undefined;
 
-        if (typeof ongoingOrder !== 'undefined') {
+        if (typeof activeRequests !== 'undefined' && Object.keys(activeRequests).length > 0) {//typeof ongoingOrder !== 'undefined'
             nextQuestion = getQuestionByIndex(OrderFlow.ASK_FOR_OPEN_ORDER);
-            activeOrder = ongoingOrder;
+            /*activeOrder = new OrderMeta("ALREADY_OPEN", new Order(phoneNumber, "ALREADY_OPEN"));
+            activeOrder.id = "ALREADY_OPEN";
+            activeOrder.data = new Order(phoneNumber, "ALREADY_OPEN");*/
+            activeOrder = orders.find((o: OrderMeta) => o.data.status === OrderStatus.INCOMPLETE);
+            if(typeof activeOrder !== 'undefined')
+                activeOrder.data.status = OrderStatus.OPEN;
         } else {
             activeOrder = orders.find((o: OrderMeta) => o.data.status === OrderStatus.INCOMPLETE);
             nextQuestion = activeOrder ? spotNextQuestion(activeOrder.data) : null;
@@ -291,6 +300,11 @@ export const interview = async (request: functions.Request, response: functions.
             addPlayable(`${activeOrder.data.address?.street} ${activeOrder.data.address?.house_number}, ${activeOrder.data.address?.zip} ${activeOrder.data.address?.city}`);
         } else if (nextQuestion.addInputToIntro === UserInput.CREATE_DATE) {
             addPlayable(`${moment(activeOrder.data.created.toDate()).fromNow()}`);
+        } else if (nextQuestion.addInputToIntro === UserInput.CREATE_DATE_OPEN
+            && typeof activeRequests !== 'undefined' 
+            && Object.keys(activeRequests).length > 0
+            && typeof activeRequests[0].createdAt !== 'undefined') {
+            addPlayable(`${moment(new Date(activeRequests[0].createdAt)).fromNow()}`);
         } else if (nextQuestion.addInputToIntro === UserInput.NAME) {
             addPlayable(`${activeOrder.data.name}`);
         }

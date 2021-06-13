@@ -137,7 +137,7 @@ export const QUESTIONS: Question[] = [
     {
         index: OrderFlow.ASK_FOR_OPEN_ORDER,
         introSources: [ Playable.GOT_OPEN_ORDER ],
-        addInputToIntro: UserInput.CREATE_DATE,
+        addInputToIntro: UserInput.CREATE_DATE_OPEN,
         announcementSource: Playable.ASK_TO_KEEP_ORDER,
         answerType: AnswerType.YES_OR_NO
     },
