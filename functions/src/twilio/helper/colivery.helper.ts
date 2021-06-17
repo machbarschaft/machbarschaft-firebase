@@ -365,7 +365,7 @@ export const createUser = async (order: om.OrderMeta): Promise<any> => {
       console.log("token: "+token);
 
       const createUserData = umlautSanitizer(JSON.stringify({
-          firstName: order.data.name || '',
+          firstName: '',
           lastName: order.data.name || '',
           street: order.data.address?.street || '',
           streetNo: order.data.address?.house_number || '',
@@ -492,6 +492,64 @@ export const createOrGetUser = async (order: om.OrderMeta): Promise<any> => {
     }
   });
 }
+
+export const updateUser = async (order: om.OrderMeta): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  return new Promise(async (resolve, reject) => {
+    authHotlineUser(order.data.phone_number).then(async (token: string) => {
+      console.log("token: "+token);
+
+      const resultingUser = await coliveryPutApiCall(
+        "/v1/user", 
+        token.toString(), 
+        umlautSanitizer(JSON.stringify({
+          firstName: '',
+          lastName: order.data.name || '',
+          street: order.data.address?.street || '',
+          streetNo: order.data.address?.house_number || '',
+          zipCode: order.data.address?.zip || '',
+          city: order.data.address?.city || '',
+          email: order.data.phone_number+'@machbarschaft.jetzt' || '',
+          location: {
+          longitude: order.data.location?.gps?.longitude.toString() || 0,
+          latitude: order.data.location?.gps?.latitude.toString() || 0
+          },
+          phone: order.data.phone_number || '',
+          source: 'HOTLINE'
+      })));
+      
+      resolve(resultingUser);      
+    }).catch((reason: any) => {
+      reject("Could not get token!");
+    });
+  });
+}
+
+/*export const updateUser = async (order: om.OrderMeta): Promise<void> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  return new Promise(async (resolve, reject) => {
+    //const userResult = await getUser(order.data.phone_number);
+    console.log(userResult);
+    if(userResult && userResult.length > 0){//user exists
+      const userData = JSON.parse(userResult);
+      if(userData && userData.id){
+        //TODO: use this when only new info is gathered per call and we don't want to set every field
+      }
+      else {
+        logger(order.data.phone_number, '', 'Returned userdata malformed. Returned data: '+userResult);
+        reject('Returned userdata malformed.');
+      }
+    }
+    else {//user does not exist
+      logger(order.data.phone_number, '', 'User does not exist.');
+      reject('User does not exist.');
+    }
+  });
+}*/
 
 export const typeToString = (type: om.Type | null): string => {
     switch (type) {

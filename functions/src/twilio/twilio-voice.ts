@@ -10,7 +10,7 @@ import moment from 'moment';
 // tslint:disable-next-line:no-import-side-effect
 import 'moment/locale/de';
 import { getGeoPosByLocation } from './helper/geo-location.helper';
-import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests } from './helper/colivery.helper';//
+import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests, updateUser } from './helper/colivery.helper';//
 import { getQuestionByIndex, spotNextQuestion } from './helper/question.helper';
 import { checkSpeechResult } from './helper/check-answer.helper';
 import { TranslateAnswer } from './service/translate-answer.service';
@@ -285,10 +285,12 @@ export const interview = async (request: functions.Request, response: functions.
             logger(activeOrder.data.phone_number, activeOrder.id, `Finished Order`);
             await orderDao.changeOrderById(activeOrder.id, { status: OrderStatus.OPEN.toString() });
             addPlayable(Playable.THANK_YOU_BYE);
-            logger("test", "test", JSON.stringify(activeOrder));
+            console.log("ActiveOrder: "+JSON.stringify(activeOrder));
             await sendOrderToColiveryAPI(activeOrder).then(async (id: string)=>{
                 await orderDao.deleteOrderById(id);
             });
+            const newUser = await updateUser(activeOrder);
+            console.log("New user: "+JSON.stringify(newUser));
             respond();
             return;
         }
