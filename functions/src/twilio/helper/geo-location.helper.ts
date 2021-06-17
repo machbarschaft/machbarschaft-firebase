@@ -10,7 +10,7 @@ export const getGeoPosByLocation = async (address: string, language: string): Pr
                 params: {
                     address,
                     language,
-                    key: functions.config().maps.key || ''
+                    key: functions.config().fire.apikey || ''
                 },
                 timeout: 5000
             }).then((r: GeocodeResponse) => {
