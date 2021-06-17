@@ -141,6 +141,7 @@ export const interview = async (request: functions.Request, response: functions.
                                 addPlayable(Playable.ORDER_DELETED);
                                 skipGathering = true;
                             } else {
+                                await orderDao.deleteOrderById(responseId);
                                 addPlayable(Playable.ORDER_KEEPED);
                                 skipGathering = true;
                             }
