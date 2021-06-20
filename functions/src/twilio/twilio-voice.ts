@@ -6,11 +6,12 @@ import { Order, Type, Urgency, Location, OrderStatus, OrderMeta, Address } from 
 import { Playable, OrderFlow } from './questions.constant';
 import { Question, AnswerType, UserInput } from './question.model';
 import { encode } from 'ngeohash';
+//import { firestore } from 'firebase-admin';
 import moment from 'moment';
 // tslint:disable-next-line:no-import-side-effect
 import 'moment/locale/de';
 import { getGeoPosByLocation } from './helper/geo-location.helper';
-import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests, updateUser } from './helper/colivery.helper';//
+import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests, updateUser, updateHelpSeeker } from './helper/colivery.helper';//
 import { getQuestionByIndex, spotNextQuestion } from './helper/question.helper';
 import { checkSpeechResult } from './helper/check-answer.helper';
 import { TranslateAnswer } from './service/translate-answer.service';
@@ -20,6 +21,22 @@ export const interview = async (request: functions.Request, response: functions.
     const phoneNumber: string = request.body.From;
     const call_sid: string = request.body.CallSid;
     const input: string = request.body.RecordingUrl || request.body.Digits
+
+    /*const jsonStr = '{"id":"IjERvUXEAkGExkcSgt20","data":{"address":{"house_number":"12","street":"Hochstraße","city":"Lüdenscheid","zip":"58511","confirmed":true},"urgency":"tomorrow","account_id":null,"last_call_sid":"CA1a8f4e0c2816cb403a747b6aad51c10f","extras":{"car_necessary":false},"status":"incomplete","location":{"geohash":"u1j7q4erf","gps":{"_latitude":23.2113697,"_longitude":12.6510467}},"privacy_agreed":true,"name":"Max Musterfrau","phone_number":"+49235128888","created":{"_seconds":1624054257,"_nanoseconds":188000000},"type":"groceries"}}';
+    const om: OrderMeta = JSON.parse(jsonStr) as OrderMeta;//new OrderMeta("IjERvUXEAkGExkcSgt20", new Order("+4915237135198", "CA1a8f4e0c2816cb403a747b6aad51c10f"));
+    om.data.location = new Location(new firestore.GeoPoint(23.2113697,12.6510467), "u1j7q4erf");
+    //om.copyInto(JSON.parse(jsonStr));
+    //om.data.address = new Address("38", "Von-der-Mark-Straße", "58511", "Lüdenscheid.");
+    console.log(om);
+
+    console.log("ActiveOrder: "+JSON.stringify(om));
+    await sendOrderToColiveryAPI(om).then(async (id: string)=>{
+        //await orderDao.deleteOrderById(id);
+    });
+    const newUser = await updateUser(om);
+    const newHS = await updateHelpSeeker(om);
+    console.log("New user: "+JSON.stringify(newUser));
+    console.log("New HS: "+JSON.stringify(newHS));*/
 
     //console.log(getHelpRequests("+49235128809"));
     //await deleteLatestHelpRequest("+49235128809");
@@ -290,7 +307,9 @@ export const interview = async (request: functions.Request, response: functions.
                 await orderDao.deleteOrderById(id);
             });
             const newUser = await updateUser(activeOrder);
+            const newHS = await updateHelpSeeker(activeOrder);
             console.log("New user: "+JSON.stringify(newUser));
+            console.log("New HS: "+JSON.stringify(newHS));
             respond();
             return;
         }

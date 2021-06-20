@@ -40,7 +40,7 @@ export const coliveryPutApiCall = async (path: string, token: string, jsonData: 
       method: 'PUT',
       headers: {
            'Content-Type': 'application/json; charset=utf-8',
-           'Content-Length': jsonData.length,
+           //'Content-Length': jsonData.length,
            'Authorization': 'Bearer '+token
          }
     };
@@ -64,6 +64,7 @@ export const coliveryPutApiCall = async (path: string, token: string, jsonData: 
 
     req.on('error', (e) => {
       console.error(e);
+      console.trace(e);
       reject(e);
     });
     console.log("PUTTED DATA: "+jsonData);
@@ -82,7 +83,7 @@ export const coliveryPostApiCall = async (path: string, token: string, jsonData:
       method: 'POST',
       headers: {
            'Content-Type': 'application/json; charset=utf-8',
-           'Content-Length': jsonData.length,
+           //'Content-Length': jsonData.length,
            'Authorization': 'Bearer '+token
          }
     };
@@ -106,6 +107,7 @@ export const coliveryPostApiCall = async (path: string, token: string, jsonData:
 
     req.on('error', (e) => {
       console.error(e);
+      console.trace(e);
       reject(e);
     });
     console.log("POSTED DATA: "+jsonData);
@@ -153,6 +155,7 @@ export const coliveryGetApiCall = async (path: string, token: string, jsonData: 
 
     req.on('error', (e) => {
       console.error(e);
+      console.trace(e);
       reject(e);
     });
     req.end();
@@ -175,6 +178,7 @@ export const sendOrderToColiveryAPI = async (order: om.OrderMeta): Promise<strin
         resolve(order.id);
       }
       else{
+        console.trace("Something went wrong!");
         reject("Something went wrong!");
       }
     });
@@ -204,6 +208,7 @@ export const authHotline = async (): Promise<string> => {
     }
     else{
       console.error("Could not get hotline token!");
+      console.trace("Could not get hotline token!");
       reject("Could not get hotline token!");
     }
   });
@@ -232,6 +237,7 @@ export const authHotlineUser = async (phoneNumber: string): Promise<string> => {
     }
     else{
       console.error("Could not get hotline user token for hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" pw: "+checksum(phoneNumber));
+      console.trace("Could not get hotline user token!");
       reject("Could not get hotline user token!");
     }
   });
@@ -252,6 +258,7 @@ export const createHotlineUser = async (phoneNumber: string): Promise<string> =>
     }
     else{
       console.error("Could not create hotline user: "+phoneNumber+"@machbarschaft.jetzt"+" pw: "+checksum(phoneNumber));
+      console.trace("Could not create hotline user!");
       reject("Could not create hotline user!");
     }
   });
@@ -274,28 +281,30 @@ export const getUser = async (phoneNumber: string): Promise<any> => {
 
       resolve(userDataRes);      
     }).catch((reason: any) => {
+      console.trace("Could not get token!");
       reject("Could not get token!");
     });
   });
 }
 
-export const getHelpSeeker = async (phoneNumber: string): Promise<any> => {
+export const getHelpSeeker = async (phoneNumber: string, token: string): Promise<string> => {
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
   return new Promise(async (resolve, reject) => {
-    authHotline().then(async (token: string) => {
-      console.log("token: "+token);
+    //authHotline().then(async (token: string) => {
+    console.log("token: "+token);
 
-      const hsDataRes = await coliveryGetApiCall(
-        '/v1/help-seeker/search/'+phoneNumber, 
-        token.toString(), 
-        {});
+    const hsDataRes = await coliveryGetApiCall(
+      '/v1/help-seeker/search/'+phoneNumber, 
+      token.toString(), 
+      {});
 
-      resolve(hsDataRes);      
-    }).catch((reason: any) => {
+    resolve(hsDataRes);      
+    /*}).catch((reason: any) => {
+      console.trace("Could not get token!");
       reject("Could not get token!");
-    });
+    });*/
   });
 }
 
@@ -321,6 +330,7 @@ export const getHelpRequests = async (phoneNumber: string): Promise<any> => {
       //console.log(result.toString());
       resolve(result);      
     }).catch((reason: any) => {
+      console.trace("Could not get token!");
       reject("Could not get token!");
     });
   });
@@ -344,13 +354,16 @@ export const deleteLatestHelpRequest = async (phoneNumber: string): Promise<any>
           console.log("Status update result: "+dataRes);
           resolve(dataRes); 
         }).catch((reason: any) => {
+          console.trace("Could not get token!");
           reject("Could not get token!");
         });
       }
       else {
+        console.trace("No help requests saved!");
         reject("No help requests saved!");
       }     
     }).catch((reason: any) => {
+      console.trace("Could not get help requests!");
       reject("Could not get help requests!");
     });
   });
@@ -364,7 +377,7 @@ export const createUser = async (order: om.OrderMeta): Promise<any> => {
     createHotlineUser(order.data.phone_number).then(async (token: string) => {
       console.log("token: "+token);
 
-      const createUserData = umlautSanitizer(JSON.stringify({
+      const createUserData = JSON.stringify({//umlautSanitizer(
           firstName: '',
           lastName: order.data.name || '',
           street: order.data.address?.street || '',
@@ -378,7 +391,7 @@ export const createUser = async (order: om.OrderMeta): Promise<any> => {
           },
           phone: order.data.phone_number || '',
           source: 'HOTLINE'
-      }));
+      });
 
       const createDataRes = await coliveryPostApiCall('/v1/user', token.toString(), createUserData);
       console.log("Created user, result: "+createDataRes);
@@ -386,6 +399,7 @@ export const createUser = async (order: om.OrderMeta): Promise<any> => {
       console.log("HS result: "+hsRes);
       resolve(hsRes);
     }).catch((reason: any) => {
+      console.trace("Could not get token!");
       reject("Could not get token!");
     });
   });
@@ -416,6 +430,7 @@ export const createHelpSeeker = async (phoneNumber: string, name: string): Promi
       const createDataRes = await createHelpSeekerToken(phoneNumber, name, token);
       resolve(createDataRes);
     }).catch((reason: any) => {
+      console.trace("Could not get token!");
       reject("Could not get token!");
     });
   });
@@ -432,7 +447,8 @@ export const createOrGetUser = async (order: om.OrderMeta): Promise<any> => {
       const userData = JSON.parse(userResult);
       if(userData && userData.id){
         logger(order.data.phone_number, '', 'User has ID '+userData.id);
-        const hsResult = await getHelpSeeker(order.data.phone_number);
+        const token: string = await authHotline();
+        const hsResult = await getHelpSeeker(order.data.phone_number, token);
         if(hsResult && hsResult.length > 0){//help seeker exists
           const hsData = JSON.parse(hsResult);
           if(hsData && hsData.id){
@@ -448,10 +464,12 @@ export const createOrGetUser = async (order: om.OrderMeta): Promise<any> => {
               resolve(createData.id);
             }
             else {
+              console.trace("Could not create help seeker! Respone malformed 1.");
               reject("Could not create help seeker! Respone malformed 1.");
             }
           }
           else {
+            console.trace("Could not create help seeker! Response empty 1.");
             reject("Could not create help seeker! Response empty 1.");
           }
         }
@@ -465,10 +483,12 @@ export const createOrGetUser = async (order: om.OrderMeta): Promise<any> => {
             resolve(createData.id);
           }
           else {
+            console.trace("Could not create user! Respone malformed 2.");
             reject("Could not create user! Respone malformed 2.");
           }
         }
         else {
+          console.trace("Could not create user! Response empty 2.");
           reject("Could not create user! Response empty 2.");
         }
       }
@@ -482,11 +502,13 @@ export const createOrGetUser = async (order: om.OrderMeta): Promise<any> => {
           resolve(createData.id);
         }
         else {
+          console.trace("Could not create user! Respone malformed. 3");
           reject("Could not create user! Respone malformed. 3");
         }
       }
       else {
         console.log(createResult);
+        console.trace("Could not create user! Response empty. 3");
         reject("Could not create user! Response empty. 3");
       }
     }
@@ -498,13 +520,15 @@ export const updateUser = async (order: om.OrderMeta): Promise<any> => {
     firebase.initializeApp(firebaseConfig);
   }
   return new Promise(async (resolve, reject) => {
-    authHotlineUser(order.data.phone_number).then(async (token: string) => {
-      console.log("token: "+token);
+    const token: string = await authHotlineUser(order.data.phone_number);
+    //.then(async (token: string) => {
+    try {
+      console.log("pn: "+order.data.phone_number+" token: "+token);
 
       const resultingUser = await coliveryPutApiCall(
         "/v1/user", 
         token.toString(), 
-        umlautSanitizer(JSON.stringify({
+        JSON.stringify({//umlautSanitizer(
           firstName: '',
           lastName: order.data.name || '',
           street: order.data.address?.street || '',
@@ -518,12 +542,59 @@ export const updateUser = async (order: om.OrderMeta): Promise<any> => {
           },
           phone: order.data.phone_number || '',
           source: 'HOTLINE'
-      })));
+      })).catch((reason: any) => {
+        console.trace("Cannot Put!");
+        console.log(reason);
+      });
+
+      console.log("Finished");
       
-      resolve(resultingUser);      
-    }).catch((reason: any) => {
-      reject("Could not get token!");
-    });
+      resolve(resultingUser);   
+    } catch(e) {
+      console.trace("ERROR!");
+      console.log(e);
+    }   
+    //})
+  });
+}
+
+export const updateHelpSeeker = async (order: om.OrderMeta): Promise<any> => {
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  return new Promise(async (resolve, reject) => {
+    const token: string = await authHotline();
+    const hs: string = await getHelpSeeker(order.data.phone_number, token);
+    const hsObj = JSON.parse(hs);
+    console.log("HS: "+hs+" ### "+hsObj.id);
+    if(hsObj && hsObj.id){
+      //authHotline().then(async (token: string) => {
+      try {
+        console.log("token: "+token);
+
+        const resultingUser = await coliveryPutApiCall(
+          "/v1/help-seeker/"+hsObj.id, 
+          token.toString(), 
+          JSON.stringify({//umlautSanitizer(
+            fullName: order.data.name || '',
+            phone: order.data.phone_number || '',
+            source: 'HOTLINE'
+        }));
+        
+        resolve(resultingUser);     
+      } catch(e) {
+        console.trace("ERROR!");
+        console.log(e);
+        reject("Put faild!");
+      }  
+      /*}).catch((reason: any) => {
+        console.trace("Could not get token!");
+        reject("Could not get token!");
+      });*/
+    }
+    else{
+      reject("HelpSeeker malformed!");
+    }
   });
 }
 
@@ -541,11 +612,13 @@ export const updateUser = async (order: om.OrderMeta): Promise<any> => {
       }
       else {
         logger(order.data.phone_number, '', 'Returned userdata malformed. Returned data: '+userResult);
+        console.trace('Returned userdata malformed.');
         reject('Returned userdata malformed.');
       }
     }
     else {//user does not exist
       logger(order.data.phone_number, '', 'User does not exist.');
+      console.trace('User does not exist.');
       reject('User does not exist.');
     }
   });
@@ -617,15 +690,16 @@ export const createHelpRequest = async (order: om.OrderMeta, helpSeekerID: strin
   }
   return new Promise(async (resolve, reject) => {  
     authHotlineUser(order.data.phone_number).then(async (token: string) => {
-      const createHRData = umlautSanitizer(JSON.stringify({
+      const createHRData = JSON.stringify({//umlautSanitizer(
         helpSeeker: helpSeekerID,
         requestText: createHelpString(order),
         requestStatus: 'OPEN'
-      }));
+      });
 
       const createDataRes = await coliveryPostApiCall('/v1/help-request', token.toString(), createHRData);
       resolve(createDataRes);
     }).catch((reason: any) => {
+      console.trace("Could not get token!");
       reject("Could not get token!");
     });
   });
