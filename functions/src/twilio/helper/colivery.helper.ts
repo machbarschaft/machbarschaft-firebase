@@ -413,7 +413,11 @@ export const createHelpSeekerToken = async (phoneNumber: string, name: string, t
     const createHSData = JSON.stringify({
       fullName: name,
       phone: phoneNumber,
-      source: 'HOTLINE'
+      source: 'HOTLINE',
+      street: '',
+      streetNo: '',
+      zipCode: '',
+      city: ''
     });
 
     const createDataRes = await coliveryPostApiCall('/v1/help-seeker', token.toString(), createHSData);
@@ -578,7 +582,11 @@ export const updateHelpSeeker = async (order: om.OrderMeta): Promise<any> => {
           JSON.stringify({//umlautSanitizer(
             fullName: order.data.name || '',
             phone: order.data.phone_number || '',
-            source: 'HOTLINE'
+            source: 'HOTLINE',
+            street: order.data.address?.street || '',
+            streetNo: order.data.address?.house_number || '',
+            zipCode: order.data.address?.zip || '',
+            city: order.data.address?.city || ''
         }));
         
         resolve(resultingUser);     

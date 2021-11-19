@@ -11,7 +11,7 @@ import moment from 'moment';
 // tslint:disable-next-line:no-import-side-effect
 import 'moment/locale/de';
 import { getGeoPosByLocation } from './helper/geo-location.helper';
-import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests, updateUser, updateHelpSeeker } from './helper/colivery.helper';//
+import { sendOrderToColiveryAPI, deleteLatestHelpRequest, getHelpRequests, updateUser, updateHelpSeeker, createOrGetUser } from './helper/colivery.helper';//
 import { getQuestionByIndex, spotNextQuestion } from './helper/question.helper';
 import { checkSpeechResult } from './helper/check-answer.helper';
 import { TranslateAnswer } from './service/translate-answer.service';
@@ -260,8 +260,14 @@ export const interview = async (request: functions.Request, response: functions.
     }
 
     if (!skipGathering) {
+        const tempOrder: Order = new Order(phoneNumber, call_sid);
+        const tempOrderMeta: OrderMeta = new OrderMeta("", tempOrder);
+        console.log("Create or get user for "+phoneNumber);
+        const hsData: any = await createOrGetUser(tempOrderMeta);
+        console.log("Create or get user result: "+JSON.stringify(hsData));
         // Find Current Order or Create New Order
         const orders: OrderMeta[] = await orderDao.findOrCreateActiveOrdersByPhoneNumber(phoneNumber, call_sid);
+
         //const ongoingOrder: OrderMeta | undefined = orders.find((o: OrderMeta) => o.data.status === OrderStatus.OPEN || o.data.status === OrderStatus.IN_PROGRESS);
         const activeRequests: any = await getHelpRequests(phoneNumber);
 
