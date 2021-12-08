@@ -200,6 +200,26 @@ export const interview = async (request: functions.Request, response: functions.
                             break;
                         case OrderFlow.ASK_FOR_ADDRESS_HOUSE_NUMBER:
                             await orderDao.changeOrderById(responseId, { 'address.house_number': answer });
+
+                            const currentOrder: Order = await orderDao.findOrderById(responseId);
+                            logger(phoneNumber, responseId, `currentOrder for geo validation`, currentOrder);
+
+                            if (currentOrder.address !== null) {
+                                try {
+                                    //street: string, house_number: string, city: string, zip: string
+                                    const {geoPoint, house_number, street, city, zip} 
+                                    = await getGeoPosByLocation(`${currentOrder.address.street}`, `${currentOrder.address.house_number}`, `${currentOrder.address.zip}`, `${currentOrder.address.city}`, 'de_DE');
+                                    const geoHash: string = encode(geoPoint.latitude, geoPoint.longitude);
+                                    await orderDao.changeOrderById(responseId, { 'location': new Location(geoPoint, geoHash).parseToFirebaseDoc() });
+                                    await orderDao.changeOrderById(responseId, { 'address.house_number': house_number });
+                                    await orderDao.changeOrderById(responseId, { 'address.street': street });
+                                    await orderDao.changeOrderById(responseId, { 'address.city': city });
+                                    await orderDao.changeOrderById(responseId, { 'address.zip': zip });
+                                } catch (e) {
+                                    logger(phoneNumber, responseId, `Error Validating Address`, e, LogLevel.ERROR);
+                                }
+                            }
+
                             break;
                         case OrderFlow.ASK_FOR_ADDRESS_STREET:
                             await orderDao.changeOrderById(responseId, { 'address.street': answer });
@@ -209,34 +229,28 @@ export const interview = async (request: functions.Request, response: functions.
                             break;
                         case OrderFlow.ASK_FOR_ADDRESS_CITY:
                             await orderDao.changeOrderById(responseId, { 'address.city': answer });
-
-                            const currentOrder: Order = await orderDao.findOrderById(responseId);
-                            logger(phoneNumber, responseId, `currentOrder for geo validation`, currentOrder);
-
-                            if (currentOrder.address !== null) {
-                                try {
-                                    const geoPoint = await getGeoPosByLocation(`${currentOrder.address.street} ${currentOrder.address.house_number},
-                                        ${currentOrder.address.zip} ${currentOrder.address.city}, Deutschland`, 'de_DE');
-                                    const geoHash: string = encode(geoPoint.latitude, geoPoint.longitude);
-                                    await orderDao.changeOrderById(responseId, { 'location': new Location(geoPoint, geoHash).parseToFirebaseDoc() });
-                                } catch (e) {
-                                    logger(phoneNumber, responseId, `Error Validating Address`, e, LogLevel.ERROR);
-                                }
-                            }
-
                             break;
                         case OrderFlow.ASK_FOR_ADDRESS_RECHECK:
                             if (!answer) {
                                 await orderDao.changeOrderById(responseId, { 'address': new Address().parseToFirebaseDoc(), 'location': new Location().parseToFirebaseDoc() });
-                            } else {
+                            } else {//TODO!!
                                 const currentOrderRecheck: Order = await orderDao.findOrderById(responseId);
-                                logger(phoneNumber, responseId, `currentOrder for geo validation`, currentOrderRecheck);
+                                logger(phoneNumber, responseId, `currentOrderRecheck for geo validation`, currentOrderRecheck);
 
                                 if (currentOrderRecheck.address !== null) {
                                     try {
-                                        const geoPoint = await getGeoPosByLocation(`${currentOrderRecheck.address.zip} ${currentOrderRecheck.address.city}, Deutschland`, 'de_DE');
+                                        /*const geoPoint = await getGeoPosByLocation(`${currentOrderRecheck.address.zip} ${currentOrderRecheck.address.city}, Deutschland`, 'de_DE');
                                         const geoHash: string = encode(geoPoint.latitude, geoPoint.longitude);
-                                        await orderDao.changeOrderById(responseId, { 'address.confirmed': true, 'location': new Location(geoPoint, geoHash).parseToFirebaseDoc() });
+                                        await orderDao.changeOrderById(responseId, { 'address.confirmed': true, 'location': new Location(geoPoint, geoHash).parseToFirebaseDoc() });*/
+                                        const {geoPoint, house_number, street, city, zip} 
+                                        = await getGeoPosByLocation(`${currentOrderRecheck.address.street}`, `${currentOrderRecheck.address.house_number}`, `${currentOrderRecheck.address.zip}`, `${currentOrderRecheck.address.city}`, 'de_DE');
+                                        const geoHash: string = encode(geoPoint.latitude, geoPoint.longitude);
+                                        await orderDao.changeOrderById(responseId, { 'location': new Location(geoPoint, geoHash).parseToFirebaseDoc() });
+                                        await orderDao.changeOrderById(responseId, { 'address.house_number': house_number });
+                                        await orderDao.changeOrderById(responseId, { 'address.street': street });
+                                        await orderDao.changeOrderById(responseId, { 'address.city': city });
+                                        await orderDao.changeOrderById(responseId, { 'address.zip': zip });
+                                        await orderDao.changeOrderById(responseId, { 'address.confirmed': true });
                                     } catch (e) {
                                         logger(phoneNumber, responseId, `Error Validating Address (ZIP and CITY)`, e, LogLevel.ERROR);
                                     }
