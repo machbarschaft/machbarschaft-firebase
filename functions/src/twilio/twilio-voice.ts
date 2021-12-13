@@ -18,7 +18,10 @@ import { TranslateAnswer } from './service/translate-answer.service';
 import { logger, LogLevel } from './helper/logger.helper';
 
 export const interview = async (request: functions.Request, response: functions.Response) => {
-    const phoneNumber: string = request.body.From;
+    let phoneNumber: string = request.body.From;
+    if(phoneNumber === "+266696687")//phone number sometimes used instead of anonymous
+        phoneNumber = '';
+
     const call_sid: string = request.body.CallSid;
     const input: string = request.body.RecordingUrl || request.body.Digits
 
@@ -106,7 +109,7 @@ export const interview = async (request: functions.Request, response: functions.
     let skipGathering: boolean = false;
 
     // Phone Number is suppressed
-    if (!phoneNumber) {
+    if (!phoneNumber || phoneNumber.length === 0) {
         logger(phoneNumber, responseId, `Phone Number Suppressed`);
         addPlayable(Playable.SUPPRESSED_PHONE_NUMBER);
         skipGathering = true;
