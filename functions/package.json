@@ -22,12 +22,14 @@
     "@types/moment": "^2.13.0",
     "@types/ngeohash": "^0.6.2",
     "@types/twilio": "^2.11.0",
+    "didyoumean2": "^5.0.0",
     "express": "^4.17.1",
     "firebase": "^7.19.0",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.3.0",
     "moment": "^2.24.0",
     "ngeohash": "^0.6.3",
+    "overpass-ts": "^4.3.8",
     "twilio": "^3.42.0"
   },
   "devDependencies": {

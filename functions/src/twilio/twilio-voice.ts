@@ -1,4 +1,3 @@
-
 import VoiceResponse, { GatherAttributes, SayLanguage } from 'twilio/lib/twiml/VoiceResponse';
 import * as functions from 'firebase-functions';
 import { OrderDao } from './model/order.dao';

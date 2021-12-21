@@ -2,19 +2,37 @@ import { Client, GeocodeResponse, Status, AddressType, GeocodingAddressComponent
 import { firestore } from 'firebase-admin';
 import { logger, LogLevel } from './logger.helper';
 import * as functions from 'firebase-functions';
+import { overpassCsv } from "overpass-ts";
+import didYouMean from 'didyoumean2';//, { ReturnTypeEnums }
 
-export const getGeoPosByLocation = async (inStreet: string, inHouse_number: string, inCity: string, inZip: string, language: string): Promise<{geoPoint:firestore.GeoPoint, house_number: String, street: String, city: String, zip: String}> => {
+export const getGeoPosByLocation = async (_street: string, _house_number: string, _zip: string, _city: string, language: string): Promise<{geoPoint:firestore.GeoPoint, house_number: String, street: String, city: String, zip: String}> => {
+    let inStreet: string = _street;
+    const inHouse_number: string = _house_number;
+    const inCity: string = _city;
+    let inZip: string = _zip;
+    inZip = inZip.replace(/[^0-9]/g, "");
+    const query: string = '[out:csv(name;false)]; area[postal_code="'+inZip+'"]->.a; way(area.a)[highway][name]; out;';
+    console.log("inZip: "+inZip+" _zip: "+_zip);
+    console.log("query: "+query);
+    const streets: string = await overpassCsv(query);
+    const streetSet: Set<string> = new Set(streets.split("\n"));
+    streetSet.delete('');
+    const altStreet = didYouMean(inStreet, Array.from(streetSet.values()));
+    console.log(altStreet);
+    if(altStreet)
+        inStreet = altStreet;
+    
     const address: string = inStreet+" "+inHouse_number+", "+inZip+" "+inCity;
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {        
         new Client({})
             .geocode({
                 params: {
                     address,
                     language,
-                    /*components: {
+                    components: {
                         country: 'DE',
                         postal_code: inZip
-                    },*/
+                    },
                     key: functions.config().fire.apikey || ''
                 },
                 timeout: 5000
@@ -61,5 +79,5 @@ export const getGeoPosByLocation = async (inStreet: string, inHouse_number: stri
                 logger('', '', `Failed Find Address via Google Geo API: `, e, LogLevel.ERROR);
                 reject(e);
             });
-    });
+        });
 };
