@@ -2,23 +2,23 @@ import { Question, AnswerType, UserInput } from './question.model';
 import { Type, Urgency } from './model/order.model';
 
 export enum Playable {
-    WELCOME_INTRO = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/hallo_Projekt.mp3",
-    ASK_FOR_PRIVACY = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/datenschutz.mp3",
+    WELCOME_INTRO = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/hallo_Projekt.mp3",
+    ASK_FOR_PRIVACY = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/datenschutz.mp3",
 
-    ASK_FOR_TYPE = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/bittewaehlensie_Projekt.mp3",
-    ASK_FOR_CAR = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/autonotwendig_Projekt.mp3",
-    ASK_FOR_PRESCRIPTION = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/rezept_Projekt.mp3",
-    ASK_FOR_URGENCY = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/wiedringend_Projekt.mp3",
+    ASK_FOR_TYPE = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/bittewaehlensie_Projekt.mp3",
+    ASK_FOR_CAR = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/autonotwendig_Projekt.mp3",
+    ASK_FOR_PRESCRIPTION = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/rezept_Projekt.mp3",
+    ASK_FOR_URGENCY = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/wiedringend_Projekt.mp3",
 
-    ALMOST_ACCOMPLISHED = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/fastgeschafft_Projekt.mp3",
-    ASK_FOR_NAME = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/namen_Projekt.mp3",
-    ASK_FOR_ADDRESS_HOUSE_NUMBER = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/hausnummer_Projekt.mp3",
-    ASK_FOR_ADDRESS_STREET = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/strasse_Projekt.mp3",
-    ASK_FOR_ADDRESS_ZIP = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/plz_Projekt.mp3",
-    ASK_FOR_ADDRESS_CITY = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/ort_Projekt.mp3",
+    ALMOST_ACCOMPLISHED = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/fastgeschafft_Projekt.mp3",
+    ASK_FOR_NAME = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/namen_Projekt.mp3",
+    ASK_FOR_ADDRESS_HOUSE_NUMBER = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/hausnummer_Projekt.mp3",
+    ASK_FOR_ADDRESS_STREET = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/strasse_Projekt.mp3",
+    ASK_FOR_ADDRESS_ZIP = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/plz_Projekt.mp3",
+    ASK_FOR_ADDRESS_CITY = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/ort_Projekt.mp3",
 
-    GOT_ADDRESS = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/folgendeadresseerkannt_Projekt.mp3",
-    ASK_FOR_ADDRESS_CHECK_UP = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/adresserichtig_Projekt.mp3",
+    GOT_ADDRESS = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/folgendeadresseerkannt_Projekt.mp3",
+    ASK_FOR_ADDRESS_CHECK_UP = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/adresserichtig_Projekt.mp3",
     GOT_INVALID_ADDRESS = "Leider konnten wir die genannte Adresse nicht finden.",
 
     GOT_INCOMPLETE_ORDER = "Hallo, hier ist Lisa von Machbarschaft. Zu dieser Telefonnummer gibt es noch eine unvollständige Anfrage von",
@@ -29,12 +29,12 @@ export enum Playable {
 
     SUPPRESSED_PHONE_NUMBER = "Hallo, hier ist Lisa von Machbarschaft. Um ein Hilfegesuch zu erstelllen, benötigen wir Ihre Telefonnummer. Diese wird aktuell jedoch unterdrückt und ist uns nicht bekannt. Bitte ändern Sie die Einstellungen Ihres Telefons und versuchen Sie es erneut. Vielen Dank.",
 
-    ORDER_DELETED = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/ok_Projekt.mp3",
-    ORDER_KEEPED = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/allesklar_Projekt%20(online-audio-converter.com).mp3",
+    ORDER_DELETED = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/ok_Projekt.mp3",
+    ORDER_KEEPED = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/allesklar_Projekt%20(online-audio-converter.com).mp3",
 
-    MISUNDERSTOOD = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/nichtverstanden_Projekt.mp3",
-    THANK_YOU_BYE = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/anfrageangenommen_Projekt.mp3",
-    UNEXPECTED_PROBLEM = "https://storage.googleapis.com/mbs-sta-299014.appspot.com/twilio/konntenichtbearbeitetwerden_Projekt.mp3"
+    MISUNDERSTOOD = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/nichtverstanden_Projekt.mp3",
+    THANK_YOU_BYE = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/anfrageangenommen_Projekt_MitVerabschiedung.mp3",
+    UNEXPECTED_PROBLEM = "https://storage.googleapis.com/mbs-prd-300213.appspot.com/twilio/konntenichtbearbeitetwerden_Projekt.mp3"
 }
 
 export enum OrderFlow {
