@@ -25,12 +25,12 @@
     "didyoumean2": "^5.0.0",
     "express": "^4.18.2",
     "firebase": "^9.14.0",
-    "firebase-admin": "^11.3.0",
-    "firebase-functions": "^3.3.0",
+    "firebase-admin": "^11.8.0",
+    "firebase-functions": "^3.24.1",
     "moment": "^2.29.4",
     "ngeohash": "^0.6.3",
     "overpass-ts": "^4.3.8",
-    "twilio": "^3.42.0"
+    "twilio": "^4.11.0"
   },
   "devDependencies": {
     "firebase-functions-test": "^0.1.6",
